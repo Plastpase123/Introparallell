@@ -4,6 +4,9 @@
 
 std::mutex out;
 
+// Define waiter mutex
+std::mutex waiter;
+
 void philosopher(int n, std::mutex *left, std::mutex *right)
 {
   while (true)
@@ -12,6 +15,8 @@ void philosopher(int n, std::mutex *left, std::mutex *right)
       std::cout << "Philosopher " << n << " is thinking." << std::endl;
       out.unlock();
 
+      // Lock waiter when picking up the forks
+      waiter.lock();
       left->lock();
       out.lock();
       std::cout << "Philosopher " << n << " picked up her left fork." << std::endl;
@@ -21,6 +26,9 @@ void philosopher(int n, std::mutex *left, std::mutex *right)
       out.lock();
       std::cout << "Philosopher " << n << " picked up her right fork." << std::endl;
       out.unlock();
+
+      // Unlock waiter, next philosopher can pick up forks
+      waiter.unlock();
 
       out.lock();
       std::cout << "Philosopher " << n << " is eating." << std::endl;
