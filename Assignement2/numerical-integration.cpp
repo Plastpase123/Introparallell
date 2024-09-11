@@ -36,9 +36,9 @@ void compute_integral(int i1, int i2, std::vector<double> points, double length)
         double x1 = points[i];
         double x2 = points[i+1];
         double result = calculate_result(x1, x2, length);
-        //lock.lock();
+        lock.lock();
         total += result;
-        //lock.unlock();
+        lock.unlock();
     }
 }
 
@@ -79,10 +79,6 @@ int main(int argc, char *argv[])
         points[i] = i*length;
     }
 
-    for (double p : points){
-        std::cout << p;
-        std::cout << "\n";
-    }
 
     double rest = std::fmod(w,threads);
     //std::cout << rest;
@@ -90,7 +86,6 @@ int main(int argc, char *argv[])
 
     int steg = (w - rest) / threads;
     int offset = steg + rest;
-
     // *** timing begins here ***
     auto start_time = std::chrono::system_clock::now();
 
@@ -102,9 +97,9 @@ int main(int argc, char *argv[])
         t[0] = std::thread(compute_integral, 0, offset - 1, points, length);
 
 
-       for(int i = 0; i < threads; i++){
-           offset = offset+(i*steg);
-           t[i+1] = std::thread(compute_integral, offset, offset + steg - 1, points, length);
+       for(int i = 1; i < threads; ++i){
+           t[i] = std::thread(compute_integral, offset, offset + steg - 1, points, length);
+	   offset = offset + steg;
        }
 
 
@@ -113,9 +108,11 @@ int main(int argc, char *argv[])
        }
 
     }
-
-    compute_integral(0, w, points, length);
-    std::cout << total;
+    
+    else {
+	compute_integral(0,w,points,length);
+    }
+    std::cout << "\n" <<  total;
     std::cout << "\n";
 
 std::chrono::duration<double> duration =
