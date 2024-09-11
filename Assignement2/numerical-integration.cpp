@@ -30,14 +30,14 @@ double calculate_result(double x1, double x2, double length)
     return result;
 }
 
-void compute_integral(int i1, int i2, std::vector<double> points, double length)
+void compute_integral(double i1, double i2, double length)
 {
     double sum_results = 0;
 
-    for (int i = i1; i < i2; i++)
+    for (double i = i1; i < i2; i += length)
     {
-        double x1 = points[i];
-        double x2 = points[i + 1];
+        double x1 = i;
+        double x2 = i + length;
         double result = calculate_result(x1, x2, length);
         sum_results += result;
     }
@@ -73,14 +73,8 @@ int main(int argc, char *argv[])
         usage(argv[0]);
     }
 
-    // Initialise list of evaluation points
-    std::vector<double> points(w + 1);
 
     double length = 1 / w;
-    for (double i = 1; i <= w; i++)
-    {
-        points[i] = i * length;
-    }
 
     double rest = std::fmod(w, threads);
     // std::cout << rest;
@@ -97,12 +91,12 @@ int main(int argc, char *argv[])
     {
         // create and join threads
         std::thread *t = new std::thread[threads];
-        t[0] = std::thread(compute_integral, 0, offset - 1, points, length);
+        t[0] = std::thread(compute_integral, 0, offset, length);
 
         for (int i = 1; i < threads; ++i)
         {
-            t[i] = std::thread(compute_integral, offset, offset + steg - 1, points, length);
-            offset = offset + steg;
+            t[i] = std::thread(compute_integral, offset, offset + steg - 1, length);
+            offset = offset + length;
         }
 
         for (int i = 0; i < threads; ++i)
@@ -113,10 +107,10 @@ int main(int argc, char *argv[])
 
     else
     {
-        compute_integral(0, w, points, length);
+        compute_integral(0, 1, length);
     }
-    std::cout << "\n"
-              << total;
+    std::cout << "\n";
+    std::cout << total;
     std::cout << "\n";
 
     std::chrono::duration<double> duration =
