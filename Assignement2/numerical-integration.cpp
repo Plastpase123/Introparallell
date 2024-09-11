@@ -32,14 +32,17 @@ double calculate_result(double x1, double x2, double length){
 }
 
 void compute_integral(int i1, int i2, std::vector<double> points, double length){
+    double sum_results = 0;
+    
     for(int i = i1; i < i2; i++){
         double x1 = points[i];
         double x2 = points[i+1];
         double result = calculate_result(x1, x2, length);
-        lock.lock();
-        total += result;
-        lock.unlock();
+        sum_results += result;
     }
+    lock.lock();
+    total += sum_results;
+    lock.unlock();
 }
 
 
