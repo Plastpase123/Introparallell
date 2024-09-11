@@ -1,0 +1,11 @@
+# Ignore all files in the build/ directory
+Introparallell/**/*.o
+
+# Ignore all object files
+*.o
+
+# Other common ignore rules (optional)
+*.exe        # Windows executables
+*.out        # Linux/macOS executables
+*.log        # Log files
+*.tmp        # Temporary files
