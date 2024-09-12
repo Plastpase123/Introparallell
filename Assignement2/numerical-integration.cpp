@@ -73,42 +73,45 @@ int main(int argc, char *argv[])
         usage(argv[0]);
     }
 
-
     double length = 1 / w;
 
-    double rest = std::fmod(w, threads);
-    // std::cout << rest;
-    // std::cout << "\n";
-
-    int steg = (w - rest) / threads;
-    int offset = steg + rest;
     // *** timing begins here ***
     auto start_time = std::chrono::system_clock::now();
 
     // configure first thread in case of uneven division of work per thread
 
-    if (threads > 1)
+    // if (threads > 1)
+    // {
+    std::thread *t = new std::thread[threads];
+    double start = 0;
+    int tasks_per_thread = w / threads;
+
+    for (int i = 0; i < threads; i++)
     {
-        // create and join threads
-        std::thread *t = new std::thread[threads];
-        t[0] = std::thread(compute_integral, 0, offset, length);
-
-        for (int i = 1; i < threads; ++i)
+        if (i != threads - 1)
         {
-            t[i] = std::thread(compute_integral, offset, offset + steg - 1, length);
-            offset = offset + length;
+            double stop = start + (tasks_per_thread * length);
+            t[i] = std::thread(compute_integral, start, stop, length);
+            start = stop;
         }
-
-        for (int i = 0; i < threads; ++i)
+        else
         {
-            t[i].join();
+            // last thread accounts for the rest of the work
+            t[i] = std::thread(compute_integral, start, 1, length);
         }
     }
 
+    for (int i = 0; i < threads; ++i)
+    {
+        t[i].join();
+    }
+    // }
+    /*
     else
     {
         compute_integral(0, 1, length);
     }
+    */
     std::cout << "\n";
     std::cout << total;
     std::cout << "\n";
