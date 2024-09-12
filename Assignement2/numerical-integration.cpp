@@ -4,15 +4,26 @@
 #include <list>
 #include <vector>
 #include <cmath>
+#include <bits/stdc++.h>
 
 std::mutex lock;
 
 double total = 0;
 
+
+void help(char *program)
+{
+    std::cout << "\nThis is a program that calculates the integral from 0 to 1 of 4/(1+x^2). \n\n"
+              << "Usage: " << program << " w threads, where:\n"
+              << "w: Amount of trapezes, where 1 <= w\n"
+              << "threads: Amount of threads, where 1 <= threads <= w.\n" << std::endl;
+    exit(1);
+}
+
 /* integral from 0 to 1 of 4/(1+x^2) dx */
 void usage(char *program)
 {
-    std::cout << "Usage: " << program << " w threads, 0 < w,  0 < threads <= w" << std::endl;
+    std::cout << "Usage: " << program << " w threads, 1 <= w,  1 < threads <= w" << std::endl;
     exit(1);
 }
 
@@ -50,9 +61,18 @@ int main(int argc, char *argv[])
 {
 
     // Catch cases where arguments are wrong
+
     if (argc != 3)
     {
-        usage(argv[0]);
+        if (argc == 2)
+        {
+            if (std::strcmp(argv[1],"-h") == 0) {help(argv[0]);}
+        }
+
+        else
+        {
+            usage(argv[0]);
+        }
     }
 
     double w;
