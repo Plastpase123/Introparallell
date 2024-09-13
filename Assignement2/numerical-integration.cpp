@@ -81,7 +81,6 @@ int main(int argc, char *argv[])
     {
         w = std::stod(argv[1]);
         threads = std::stoi(argv[2]);
-        std::cout << threads;
     }
     catch (std::exception const &)
     {
