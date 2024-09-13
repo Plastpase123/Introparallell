@@ -4,19 +4,19 @@
 #include <list>
 #include <vector>
 #include <cmath>
-#include <bits/stdc++.h>
+#include <string>
 
 std::mutex lock;
 
 double total = 0;
-
 
 void help(char *program)
 {
     std::cout << "\nThis is a program that calculates the integral from 0 to 1 of 4/(1+x^2). \n\n"
               << "Usage: " << program << " w threads, where:\n"
               << "w: Amount of trapezes, where 1 <= w\n"
-              << "threads: Amount of threads, where 1 <= threads <= w.\n" << std::endl;
+              << "threads: Amount of threads, where 1 <= threads <= w.\n"
+              << std::endl;
     exit(1);
 }
 
@@ -66,7 +66,10 @@ int main(int argc, char *argv[])
     {
         if (argc == 2)
         {
-            if (std::strcmp(argv[1],"-h") == 0) {help(argv[0]);}
+            if (std::string(argv[1]) == "-h")
+            {
+                help(argv[0]);
+            }
         }
 
         else
@@ -97,7 +100,6 @@ int main(int argc, char *argv[])
     // *** timing begins here ***
     auto start_time = std::chrono::system_clock::now();
 
-
     std::thread *t = new std::thread[threads];
     double start = 0;
     int tasks_per_thread = w / threads;
@@ -113,21 +115,15 @@ int main(int argc, char *argv[])
         else
         {
             // last thread accounts for the rest of the work
-            t[i] = std::thread(compute_integral, start, 1, length);
+            compute_integral(start, 1, length);
         }
     }
 
-    for (int i = 0; i < threads; ++i)
+    for (int i = 0; i < threads - 1; ++i)
     {
         t[i].join();
     }
-    // }
-    /*
-    else
-    {
-        compute_integral(0, 1, length);
-    }
-    */
+
     std::cout << "\n";
     std::cout << total;
     std::cout << "\n";
