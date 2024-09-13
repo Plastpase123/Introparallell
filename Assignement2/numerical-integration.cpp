@@ -97,10 +97,7 @@ int main(int argc, char *argv[])
     // *** timing begins here ***
     auto start_time = std::chrono::system_clock::now();
 
-    // configure first thread in case of uneven division of work per thread
 
-    // if (threads > 1)
-    // {
     std::thread *t = new std::thread[threads];
     double start = 0;
     int tasks_per_thread = w / threads;

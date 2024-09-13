@@ -12,6 +12,9 @@ integral: numerical-integration.cpp
 integral_debug: numerical-integration.cpp
 	g++ -std=c++11 -g -Wall -pthread numerical-integration.cpp -o numint.o
 
+sieve: SoE.cpp
+	g++ -std=c++11 -Wall -pthread SoE.cpp -o SoE.o
+
 clean_o:
 	rm *.o
 

@@ -12,7 +12,7 @@ output_file="results.txt"
 wvalues=(1 100 1000 10000 100000 1000000 10000000)
 
 # Array of values for threads
-tvalues=(1 3 5 7 9 11 13)
+tvalues=(1 3 5 7 9 11 13 15)
 
 # Iterate over all combinations of w and threads
 for w in "${wvalues[@]}"; do
