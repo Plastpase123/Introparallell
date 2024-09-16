@@ -62,10 +62,10 @@ void compute_integral(double i1, double i2, double length)
 void compute_integral2(int max, double length)
 {
     double sum_results = 0;
-
-    while (counter < max)
+    double local_count = 0;
+    while (local_count < max)
     {
-        double local_count = counter;
+        local_count = counter;
         counter++;
 
         double result = calculate_result(local_count * length, (local_count * length) + length, length);
