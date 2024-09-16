@@ -5,10 +5,12 @@
 #include <vector>
 #include <cmath>
 #include <string>
+#include <atomic>
 
 std::mutex lock;
 
 double total = 0;
+std::atomic<int> counter{0};
 
 void help(char *program)
 {
@@ -57,6 +59,25 @@ void compute_integral(double i1, double i2, double length)
     lock.unlock();
 }
 
+void compute_integral2(int max, double length)
+{
+    double sum_results = 0;
+
+    while (counter < max) {
+        double local_count = counter;
+        counter++;
+
+        double result = calculate_result(local_count*length, (local_count*length) + length, length);
+        sum_results += result;
+    }
+
+    lock.lock();
+    total += sum_results;
+    lock.unlock();
+}
+
+
+
 int main(int argc, char *argv[])
 {
 
@@ -103,6 +124,12 @@ int main(int argc, char *argv[])
     std::thread *t = new std::thread[threads];
     double start = 0;
     int tasks_per_thread = w / threads;
+
+/*
+    for(int i = 0; i < threads; i++){
+        t[i] = std::thread(compute_integral2, w, length);
+    }*/
+
 
     for (int i = 0; i < threads; i++)
     {
