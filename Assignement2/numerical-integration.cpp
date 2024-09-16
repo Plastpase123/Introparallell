@@ -63,11 +63,12 @@ void compute_integral2(int max, double length)
 {
     double sum_results = 0;
 
-    while (counter < max) {
+    while (counter < max)
+    {
         double local_count = counter;
         counter++;
 
-        double result = calculate_result(local_count*length, (local_count*length) + length, length);
+        double result = calculate_result(local_count * length, (local_count * length) + length, length);
         sum_results += result;
     }
 
@@ -76,14 +77,12 @@ void compute_integral2(int max, double length)
     lock.unlock();
 }
 
-
-
 int main(int argc, char *argv[])
 {
 
     // Catch cases where arguments are wrong
 
-    if (argc != 3)
+    if (argc != 4)
     {
         if (argc == 2)
         {
@@ -101,10 +100,12 @@ int main(int argc, char *argv[])
 
     double w;
     int threads;
+    int method;
     try
     {
         w = std::stod(argv[1]);
         threads = std::stoi(argv[2]);
+        method = std::stoi(argv[3]);
     }
     catch (std::exception const &)
     {
@@ -125,30 +126,40 @@ int main(int argc, char *argv[])
     double start = 0;
     int tasks_per_thread = w / threads;
 
-/*
-    for(int i = 0; i < threads; i++){
-        t[i] = std::thread(compute_integral2, w, length);
-    }*/
-
-
-    for (int i = 0; i < threads; i++)
+    if (method == 1)
     {
-        if (i != threads - 1)
+
+        for (int i = 0; i < threads; i++)
         {
-            double stop = start + (tasks_per_thread * length);
-            t[i] = std::thread(compute_integral, start, stop, length);
-            start = stop;
+            if (i != threads - 1)
+            {
+                double stop = start + (tasks_per_thread * length);
+                t[i] = std::thread(compute_integral, start, stop, length);
+                start = stop;
+            }
+            else
+            {
+                // last thread accounts for the rest of the work
+                compute_integral(start, 1, length);
+            }
         }
-        else
+        for (int i = 0; i < threads - 1; ++i)
         {
-            // last thread accounts for the rest of the work
-            compute_integral(start, 1, length);
+            t[i].join();
         }
     }
-
-    for (int i = 0; i < threads - 1; ++i)
+    else
     {
-        t[i].join();
+
+        for (int i = 0; i < threads; i++)
+        {
+            t[i] = std::thread(compute_integral2, w, length);
+        }
+
+        for (int i = 0; i < threads; i++)
+        {
+            t[i].join();
+        }
     }
 
     std::cout << "\n";
