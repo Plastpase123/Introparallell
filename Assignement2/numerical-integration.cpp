@@ -46,12 +46,11 @@ double calculate_result(double x1, double x2, double length)
 void compute_integral(double i1, double i2, double length)
 {
     double sum_results = 0;
-
-    for (double i = i1; i < i2; i += length)
+    for (double i = i1; i < i2 ; i += 1)
     {
         double x1 = i;
-        double x2 = i + length;
-        double result = calculate_result(x1, x2, length);
+        double x2 = i + 1;
+        double result = calculate_result(x1 * length, x2 * length, length);
         sum_results += result;
     }
     lock.lock();
@@ -65,14 +64,14 @@ void compute_integral2(int max, double length)
     double local_count = 0;
     while (local_count < max - 1)
     {
-	counter_lock.lock();
+        counter_lock.lock();
         local_count = counter;
-	if (max <= local_count){
-		counter_lock.unlock();
-		break;
-	}
+        if (max <= local_count){
+            counter_lock.unlock();
+            break;
+        }
         counter++;
-	counter_lock.unlock();
+        counter_lock.unlock();
         double result = calculate_result(local_count * length, (local_count * length) + length, length);
         sum_results += result;
     }
@@ -130,7 +129,6 @@ int main(int argc, char *argv[])
     std::thread *t = new std::thread[threads];
     double start = 0;
     int tasks_per_thread = w / threads;
-
     if (method == 1)
     {
 
@@ -138,14 +136,14 @@ int main(int argc, char *argv[])
         {
             if (i != threads - 1)
             {
-                double stop = start + (tasks_per_thread * length);
+                double stop = start + tasks_per_thread;
                 t[i] = std::thread(compute_integral, start, stop, length);
                 start = stop;
             }
             else
             {
                 // last thread accounts for the rest of the work
-                compute_integral(start, 1, length);
+                compute_integral(start, w, length);
             }
         }
         for (int i = 0; i < threads - 1; ++i)
