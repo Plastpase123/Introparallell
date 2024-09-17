@@ -8,7 +8,7 @@
 #include <atomic>
 
 std::mutex lock;
-
+std::mutex counter_lock;
 double total = 0;
 std::atomic<int> counter{0};
 
@@ -63,11 +63,16 @@ void compute_integral2(int max, double length)
 {
     double sum_results = 0;
     double local_count = 0;
-    while (local_count < max)
+    while (local_count < max - 1)
     {
+	counter_lock.lock();
         local_count = counter;
+	if (max <= local_count){
+		counter_lock.unlock();
+		break;
+	}
         counter++;
-
+	counter_lock.unlock();
         double result = calculate_result(local_count * length, (local_count * length) + length, length);
         sum_results += result;
     }

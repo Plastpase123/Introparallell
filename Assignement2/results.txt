@@ -1,0 +1,97 @@
+w=1, threads=1, Result:
+0
+Finished in 0.000263007 seconds (wall clock).
+w=1, threads=2, Result:Usage: ./numint.o w threads, 1 <= w,  1 < threads <= w
+w=1, threads=4, Result:Usage: ./numint.o w threads, 1 <= w,  1 < threads <= w
+w=1, threads=8, Result:Usage: ./numint.o w threads, 1 <= w,  1 < threads <= w
+w=1, threads=16, Result:Usage: ./numint.o w threads, 1 <= w,  1 < threads <= w
+w=100, threads=1, Result:
+3.14158
+Finished in 0.000241811 seconds (wall clock).
+w=100, threads=2, Result:
+3.14158
+Finished in 0.000319804 seconds (wall clock).
+w=100, threads=4, Result:
+3.14158
+Finished in 0.000413991 seconds (wall clock).
+w=100, threads=8, Result:
+3.14158
+Finished in 0.000532584 seconds (wall clock).
+w=100, threads=16, Result:
+3.14158
+Finished in 0.000999738 seconds (wall clock).
+w=10000, threads=1, Result:
+3.14159
+Finished in 0.00144366 seconds (wall clock).
+w=10000, threads=2, Result:
+3.14159
+Finished in 0.00473896 seconds (wall clock).
+w=10000, threads=4, Result:
+3.14159
+Finished in 0.00575965 seconds (wall clock).
+w=10000, threads=8, Result:
+3.14159
+Finished in 0.00640842 seconds (wall clock).
+w=10000, threads=16, Result:
+3.14159
+Finished in 0.00681474 seconds (wall clock).
+w=100000, threads=1, Result:
+3.14159
+Finished in 0.0124872 seconds (wall clock).
+w=100000, threads=2, Result:
+3.14159
+Finished in 0.0591163 seconds (wall clock).
+w=100000, threads=4, Result:
+3.14159
+Finished in 0.0544327 seconds (wall clock).
+w=100000, threads=8, Result:
+3.14159
+Finished in 0.0604422 seconds (wall clock).
+w=100000, threads=16, Result:
+3.14159
+Finished in 0.0603487 seconds (wall clock).
+w=1000000, threads=1, Result:
+3.14159
+Finished in 0.122926 seconds (wall clock).
+w=1000000, threads=2, Result:
+3.14159
+Finished in 0.414388 seconds (wall clock).
+w=1000000, threads=4, Result:
+3.14159
+Finished in 0.524834 seconds (wall clock).
+w=1000000, threads=8, Result:
+3.14159
+Finished in 0.596694 seconds (wall clock).
+w=1000000, threads=16, Result:
+3.14159
+Finished in 0.595662 seconds (wall clock).
+w=10000000, threads=1, Result:
+3.14159
+Finished in 1.22529 seconds (wall clock).
+w=10000000, threads=2, Result:
+3.14159
+Finished in 4.37486 seconds (wall clock).
+w=10000000, threads=4, Result:
+3.14159
+Finished in 5.24321 seconds (wall clock).
+w=10000000, threads=8, Result:
+3.14159
+Finished in 5.89273 seconds (wall clock).
+w=10000000, threads=16, Result:
+3.14159
+Finished in 5.88888 seconds (wall clock).
+w=100000000, threads=1, Result:
+3.14159
+Finished in 12.2213 seconds (wall clock).
+w=100000000, threads=2, Result:
+3.14159
+Finished in 51.8033 seconds (wall clock).
+w=100000000, threads=4, Result:
+3.14159
+Finished in 53.699 seconds (wall clock).
+w=100000000, threads=8, Result:
+3.14159
+Finished in 59.2126 seconds (wall clock).
+w=100000000, threads=16, Result:
+3.14159
+Finished in 59.1596 seconds (wall clock).

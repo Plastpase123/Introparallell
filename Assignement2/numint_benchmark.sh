@@ -11,14 +11,14 @@ output_file="results.txt"
 # Array of values for w
 wvalues=(1 100 10000 100000 1000000 10000000 100000000)
 # Array of values for threads
-tvalues=(1 3 5 7 9 11 13 15)
+tvalues=(1 2 4 8 16)
 
 # Iterate over all combinations of w and threads
 for w in "${wvalues[@]}"; do
     for t in "${tvalues[@]}"; do
         # Run the command and append the output to the file
         echo "Running ./numint.o with w=$w and threads=$t"
-        result=$(./numint.o $w $t)
+        result=$(./numint.o $w $t 2)
         echo "w=$w, threads=$t, Result:$result" >> "$output_file"
     done
 done
