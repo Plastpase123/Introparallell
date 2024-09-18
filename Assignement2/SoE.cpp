@@ -40,11 +40,9 @@ void compute_primes_parallell(int start, int max, std::vector<bool>& primes){
     if (primes[i]){
       int offset = std::max(i * i, ((start + i - 1) / i) * i);
       for (int j = offset; j <= max; j += i){
-        //lock.lock();
         primes[j] = false;
-        //lock.unlock();
       }
-    }
+   }
   }
 }
 
@@ -94,12 +92,12 @@ int main(int argc, char*argv[]){
 
 
   std::vector<int> prime_numbers;
-
+/*
   for (int i = 2; i < max; i++){
     if (primes[i]){
       prime_numbers.push_back(i);
     }
-  }
+  }*/
 
   //print_container(prime_numbers);
 
