@@ -22,31 +22,31 @@ void print_container(const std::vector<int>& c)
     std::cout << '\n';
 }
 
-void compute_primes(int k, int max, std::vector<int>& list){
-  while(k < max){
-    // Mark all multiples of k
-    for (int i = k*k; i <= max; i += k){
-      list[i-1] = 0;
-    }
+void compute_primes(int max, std::vector<bool>& primes){
+  primes[0] = primes[1] = false;
 
-    // Find smallest unmarked number greater than k
-    k++;
-    while(list[k-1] == 0){
-      k++;
+  for (int i = 2; i*i <= max; ++i){
+    if (primes[i]){
+      for (int j = i*i; j <= max; j += i){
+        primes[j] = false;
+      }
     }
   }
+
 }
 
-void compute_primes_parallell(int start, int max, std::vector<int>& primes, std::vector<int>& list){
-  for (int k : primes){
-    for (int i = start; i <= max; i++){
-      if (list[i-1] % k == 0){
-        list[i-1] = 0;
+void compute_primes_parallell(int start, int max, std::vector<bool>& primes){
+  for (int i = 2; i*i <= max; ++i){
+    if (primes[i]){
+      int offset = std::max(i * i, ((start + i - 1) / i) * i);
+      for (int j = offset; j <= max; j += i){
+        lock.lock();
+        primes[j] = false;
+        lock.unlock();
       }
     }
   }
 }
-
 
 
 int main(int argc, char*argv[]){
@@ -60,55 +60,46 @@ int main(int argc, char*argv[]){
   int elements = max - sqrtmax;
   int threads = std::stoi(argv[2]);
   int chunk_size = elements / threads;
-  std::vector<int> list;
+  std::vector<bool> primes(max + 1, true);
 
 
-
-  for (int i = 1; i <= max; i++){
-    list.push_back(i);
-  }
-
-  int k = 2;
-  list[0] = 0;
+  compute_primes(sqrtmax, std::ref(primes));
 
 
-  compute_primes(k, sqrtmax, list);
-
-  std::vector<int> primes;
-
-  //  Retrieve primes from original list
-  for(int i = 0; i < sqrtmax; i++){
-    if (list[i] != 0){
-        primes.push_back(list[i]);
-      }
-  }
-
-  int start = sqrtmax + 1;
 
   auto start_time = std::chrono::system_clock::now();
 
-
+  int start = sqrtmax + 1;
   std::thread *t = new std::thread[threads];
   for (int i = 0; i < threads; i++){
     if (i != threads - 1){
-      t[i] = std::thread(compute_primes_parallell, start*(i+1), start*(i+1) + chunk_size, std::ref(primes), std::ref(list));
+      t[i] = std::thread(compute_primes_parallell, start*(i+1), start*(i+1) + chunk_size, std::ref(primes));
     }
     else {
-      compute_primes_parallell(start*(i+1), max, primes, list);
+      compute_primes_parallell(start*(i+1), max, primes);
     }
   }
 
-  for(int i = start; i < max; i++){
-    if (list[i] != 0){
-        primes.push_back(list[i]);
-      }
+  for (int i = 0; i < threads - 1; i++) {
+    t[i].join();
   }
+
 
   std::chrono::duration<double> duration =
         (std::chrono::system_clock::now() - start_time);
   // *** timing ends here ***
-  std::cout << "Finished in " << duration.count() << " seconds (wall clock)." << std::endl;
+  std::cout << "Finished in " << duration.count() << " seconds (wall clock).\n";
 
-  //print_container(primes);
+
+  std::vector<int> prime_numbers;
+
+  for (int i = 2; i < max; i++){
+    if (primes[i]){
+      prime_numbers.push_back(i);
+    }
+  }
+
+  //print_container(prime_numbers);
+
   return 0;
 }
