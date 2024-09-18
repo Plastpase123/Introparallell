@@ -73,10 +73,12 @@ int main(int argc, char*argv[]){
   std::thread *t = new std::thread[threads];
   for (int i = 0; i < threads; i++){
     if (i != threads - 1){
-      t[i] = std::thread(compute_primes_parallell, start*(i+1), start*(i+1) + chunk_size, std::ref(primes));
+      int stop = start + chunk_size;
+      t[i] = std::thread(compute_primes_parallell, start, stop, std::ref(primes));
+      start = stop;
     }
     else {
-      compute_primes_parallell(start*(i+1), max, primes);
+      compute_primes_parallell(start, max, primes);
     }
   }
 
