@@ -40,9 +40,9 @@ void compute_primes_parallell(int start, int max, std::vector<bool>& primes){
     if (primes[i]){
       int offset = std::max(i * i, ((start + i - 1) / i) * i);
       for (int j = offset; j <= max; j += i){
-        lock.lock();
+        //lock.lock();
         primes[j] = false;
-        lock.unlock();
+        //lock.unlock();
       }
     }
   }
