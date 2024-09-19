@@ -46,7 +46,7 @@ double calculate_result(double x1, double x2, double length)
 void compute_integral(double i1, double i2, double length)
 {
     double sum_results = 0;
-    for (double i = i1; i < i2 ; i += 1)
+    for (double i = i1; i < i2; i += 1)
     {
         double x1 = i;
         double x2 = i + 1;
@@ -66,7 +66,8 @@ void compute_integral2(int max, double length)
     {
         counter_lock.lock();
         local_count = counter;
-        if (max <= local_count){
+        if (max <= local_count)
+        {
             counter_lock.unlock();
             break;
         }

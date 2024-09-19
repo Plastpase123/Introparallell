@@ -15,6 +15,9 @@ integral_debug: numerical-integration.cpp
 SoE: SoE.cpp
 	g++ -std=c++11 -Wall -pthread SoE.cpp -o SoE.o
 
+Benchmark_example: benchmark_example.cpp
+	g++ -std=c++11 -Wall -pthread benchmark_example.cpp -o benchmark_example.o
+
 clean_o:
 	rm *.o
 
