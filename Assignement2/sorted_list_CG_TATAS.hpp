@@ -18,7 +18,7 @@ template <typename T>
 class sorted_list
 {
 	node<T> *first = nullptr;
-	std::atomic<bool> m = {false};
+	std::atomic<bool> m {false};
 
 public:
 	/* default implementations:
@@ -46,7 +46,7 @@ public:
 	/* insert v into the list */
 	void insert(T v)
 	{
-		aquire_lock();
+		acquire_lock();
 		/* first find position */
 		node<T> *pred = nullptr;
 		node<T> *succ = first;
@@ -75,7 +75,7 @@ public:
 
 	void remove(T v)
 	{
-		aquire_lock();
+		acquire_lock();
 		/* first find position */
 		node<T> *pred = nullptr;
 		node<T> *current = first;
@@ -106,7 +106,7 @@ public:
 	/* count elements with value v in the list */
 	std::size_t count(T v)
 	{
-		aquire_lock();
+		acquire_lock();
 		std::size_t cnt = 0;
 		/* first go to value v */
 		node<T> *current = first;
@@ -124,7 +124,7 @@ public:
 		return cnt;
 	}
 
-	void aquire_lock()
+	void acquire_lock()
 	{
 		while (true)
 		{
