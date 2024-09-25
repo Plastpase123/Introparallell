@@ -1,65 +1,20 @@
 #ifndef lacpp_sorted_list_hpp
 #define lacpp_sorted_list_hpp lacpp_sorted_list_hpp
-#include <atomic>
-#include <iostream>
-#include <thread>
+
+#include <mutex>
+
 /* a sorted list implementation by David Klaftenegger, 2015
  * please report bugs or suggest improvements to david.klaftenegger@it.uu.se
  */
 
-
-// MCS Lock node structure
-struct QNode {
-	bool locked = false;
-    QNode* next = nullptr;
-};
-
-
-// MCS Lock class for fine-grained locking
-class MCSLock {
-    std::atomic<QNode*> tail;
-	static thread_local QNode qnode;
-
-    public:
-        void lock() {
-            QNode* predNode = tail.exchange(&qnode, std::memory_order_acquire);
-
-            if (predNode != nullptr) {
-				qnode.locked = true;
-                predNode->next = &qnode;
-                while (qnode.locked) {}
-            }
-        }
-
-        void unlock() {
-            QNode* successor = qnode.next;
-            if (successor == nullptr) {
-				QNode* expected = &qnode;
-                if (tail.compare_exchange_strong(expected, nullptr, std::memory_order_release)) {
-                    return;
-                }
-                while (successor == nullptr){}
-            }
-            successor->locked = false;
-			qnode.next = nullptr;
-
-        }
-    };
-
-thread_local QNode MCSLock::qnode;
-
 /* struct for list nodes */
 template <typename T>
-
 struct node
 {
 	T value;
 	node<T> *next;
-	MCSLock lock;
+	std::mutex lock;
 };
-
-
-
 
 /* non-concurrent sorted singly-linked list */
 template <typename T>
@@ -139,8 +94,6 @@ public:
 		if (pred != nullptr) {
 			pred->lock.unlock();
 		}
-
-
 	}
 
 	void remove(T v)
@@ -240,8 +193,6 @@ public:
 		}
 		return cnt;
 	}
-
-
 };
 
 #endif // lacpp_sorted_list_hpp
