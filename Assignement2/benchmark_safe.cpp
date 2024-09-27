@@ -5,14 +5,11 @@
 #include <string>
 
 #include "benchmark.hpp"
-//#include "sorted_list.hpp"
+#include "sorted_list.hpp"
 //#include "sorted_list_CG.hpp"
 //#include "sorted_list_CG_TATAS.hpp"
 //#include "sorted_list_FG_MCS.hpp"
-#include "sorted_list_CG_MCS.hpp"
-
 //#include "sorted_list_FG.hpp"
-//#include "sorted_list_FG_TATAS.hpp"
 static const int DATA_VALUE_RANGE_MIN = 0;
 static const int DATA_VALUE_RANGE_MAX = 256;
 static const int DATA_PREFILL = 512;
@@ -63,7 +60,7 @@ int main(int argc, char *argv[])
 	/* get number of threads from command line */
 	if (argc < 2)
 	{
-		std::cerr << u8"Please specify number of worker threads: " << argv[0] << u8" <number>\n";
+		std::cerr << u8"Please specify number of worker threads: " << argv[0] << u8" <number> \n";
 		std::exit(EXIT_FAILURE);
 	}
 	std::istringstream ss(argv[1]);
@@ -73,6 +70,7 @@ int main(int argc, char *argv[])
 		std::cerr << u8"Invalid number of threads '" << argv[1] << u8"'\n";
 		std::exit(EXIT_FAILURE);
 	}
+
 	/* set up random number generator */
 	std::random_device rd;
 	std::mt19937 engine(rd());
@@ -87,10 +85,10 @@ int main(int argc, char *argv[])
 			l1.insert(uniform_dist(engine));
 		}
 		std::cout << "First benchmark\n";
-		benchmark(threadcnt, u8"non-thread-safe read", [&l1](int random)
+		benchmark(threadcnt, u8"thread-safe read", [&l1](int random)
 				  { read(l1, random); });
 		std::cout << "Second benchmark \n";
-		benchmark(threadcnt, u8"non-thread-safe update", [&l1](int random)
+		benchmark(threadcnt, u8"thread-safe update", [&l1](int random)
 				  { update(l1, random); });
 	}
 	{
@@ -102,7 +100,7 @@ int main(int argc, char *argv[])
 			l1.insert(uniform_dist(engine));
 		}
 		std::cout << "Third benchmark \n";
-		benchmark(threadcnt, u8"non-thread-safe mixed", [&l1](int random)
+		benchmark(threadcnt, u8"thread-safe mixed", [&l1](int random)
 				  { mixed(l1, random); });
 	}
 	return EXIT_SUCCESS;

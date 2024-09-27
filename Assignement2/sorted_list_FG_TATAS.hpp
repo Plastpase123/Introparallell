@@ -3,6 +3,7 @@
 
 #include <mutex>
 #include <iostream>
+#include <atomic>
 /* a sorted list implementation by David Klaftenegger, 2015
  * please report bugs or suggest improvements to david.klaftenegger@it.uu.se
  */
@@ -147,10 +148,8 @@ public:
 			pred->next = current->next;
 		}
 
-		if (current != nullptr)
-		{
-			release_lock(current);
-		}
+		release_lock(current);
+		delete current;
 		if (pred != nullptr)
 		{
 			release_lock(pred);

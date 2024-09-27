@@ -134,10 +134,10 @@ public:
 		} else {
 			pred->next = current->next;
 		}
+		current->lock.unlock();
+		delete current;
 
-		if (current != nullptr) {
-			current->lock.unlock();
-		} if (pred != nullptr) {
+		if (pred != nullptr) {
 			pred->lock.unlock();
 		}
 	}

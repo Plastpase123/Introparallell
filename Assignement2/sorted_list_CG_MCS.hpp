@@ -1,25 +1,60 @@
 #ifndef lacpp_sorted_list_hpp
 #define lacpp_sorted_list_hpp lacpp_sorted_list_hpp
-
-#include <mutex>
+#include <atomic>
+#include <iostream>
+#include <thread>
+#include "mcs_lock.hpp"
 /* a sorted list implementation by David Klaftenegger, 2015
  * please report bugs or suggest improvements to david.klaftenegger@it.uu.se
  */
 
+thread_local MCSLock::QNode MCSLock::qnode;
+
+void MCSLock::lock() {
+	qnode.next.store(nullptr, std::memory_order_release);
+    QNode* predNode = tail.exchange(&qnode, std::memory_order_relaxed);
+
+    if (predNode != nullptr) {
+		qnode.locked.store(true, std::memory_order_release);
+		predNode->next.store(&qnode, std::memory_order_release);
+        while (qnode.locked.load(std::memory_order_acquire)) {}
+     }
+}
+
+void MCSLock::unlock() {
+	QNode* successor = qnode.next.load(std::memory_order_acquire);
+	if (successor == nullptr) {
+		QNode* expected = &qnode;
+		if (tail.compare_exchange_strong(expected, nullptr, std::memory_order_release, std::memory_order_relaxed)) {
+			return;
+		}
+		while (successor == nullptr){
+			successor = qnode.next.load(std::memory_order_acquire);
+		}
+	}
+	successor->locked.store(false, std::memory_order_release);
+	successor->next.store(nullptr, std::memory_order_release);
+
+}
+
+
+
 /* struct for list nodes */
 template <typename T>
+
 struct node
 {
 	T value;
 	node<T> *next;
 };
 
+
 /* non-concurrent sorted singly-linked list */
 template <typename T>
-class sorted_list_cg
+class sorted_list
 {
 	node<T> *first = nullptr;
-	std::mutex m;
+	MCSLock lock;
 
 public:
 	/* default implementations:
@@ -32,12 +67,12 @@ public:
 	 * The first is required due to the others,
 	 * which are explicitly listed due to the rule of five.
 	 */
-	sorted_list_cg() = default;
-	sorted_list_cg(const sorted_list_cg<T> &other) = default;
-	sorted_list_cg(sorted_list_cg<T> &&other) = default;
-	sorted_list_cg<T> &operator=(const sorted_list_cg<T> &other) = default;
-	sorted_list_cg<T> &operator=(sorted_list_cg<T> &&other) = default;
-	~sorted_list_cg()
+	sorted_list() = default;
+	sorted_list(const sorted_list<T> &other) = default;
+	sorted_list(sorted_list<T> &&other) = default;
+	sorted_list<T> &operator=(const sorted_list<T> &other) = default;
+	sorted_list<T> &operator=(sorted_list<T> &&other) = default;
+	~sorted_list()
 	{
 		while (first != nullptr)
 		{
@@ -47,22 +82,25 @@ public:
 	/* insert v into the list */
 	void insert(T v)
 	{
-		std::lock_guard<std::mutex> lock(m);
+		lock.lock();
 		/* first find position */
 		node<T> *pred = nullptr;
 		node<T> *succ = first;
-		while (succ != nullptr && succ->value < v)
-		{
+
+		while (succ != nullptr && succ->value < v) {
+
 			pred = succ;
 			succ = succ->next;
+
 		}
 
 		/* construct new node */
 		node<T> *current = new node<T>();
 		current->value = v;
-
 		/* insert new node between pred and succ */
 		current->next = succ;
+
+
 		if (pred == nullptr)
 		{
 			first = current;
@@ -71,21 +109,25 @@ public:
 		{
 			pred->next = current;
 		}
+		lock.unlock();
+
 	}
 
 	void remove(T v)
 	{
-		std::lock_guard<std::mutex> lock(m);
+		lock.lock();
 		/* first find position */
 		node<T> *pred = nullptr;
 		node<T> *current = first;
-		while (current != nullptr && current->value < v)
-		{
+
+		while (current != nullptr && current->value < v) {
 			pred = current;
 			current = current->next;
 		}
+
 		if (current == nullptr || current->value != v)
 		{
+			lock.unlock();
 			/* v not found */
 			return;
 		}
@@ -93,33 +135,43 @@ public:
 		if (pred == nullptr)
 		{
 			first = current->next;
-		}
-		else
-		{
+		} else {
 			pred->next = current->next;
 		}
+
 		delete current;
+		lock.unlock();
 	}
 
 	/* count elements with value v in the list */
 	std::size_t count(T v)
 	{
-		std::lock_guard<std::mutex> lock(m);
+		lock.lock();
 		std::size_t cnt = 0;
-		/* first go to value v */
+
+		node<T> *pred = nullptr;
 		node<T> *current = first;
-		while (current != nullptr && current->value < v)
-		{
+
+		while (current != nullptr && current->value < v) {
+
+			pred = current;
 			current = current->next;
 		}
+
+
 		/* count elements */
-		while (current != nullptr && current->value == v)
-		{
+		while (current != nullptr && current->value == v) {
 			cnt++;
+
+			pred = current;
 			current = current->next;
+
 		}
+		lock.unlock();
 		return cnt;
 	}
+
+
 };
 
-#endif // lacpp_sorted_list_cg_hpp
+#endif // lacpp_sorted_list_hpp

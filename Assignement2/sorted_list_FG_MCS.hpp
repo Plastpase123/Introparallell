@@ -11,7 +11,7 @@
 thread_local MCSLock::QNode MCSLock::qnode;
 
 void MCSLock::lock() {
-	//qnode.next.store(nullptr, std::memory_order_release);
+	qnode.next.store(nullptr, std::memory_order_release);
     QNode* predNode = tail.exchange(&qnode, std::memory_order_relaxed);
 
     if (predNode != nullptr) {
@@ -181,10 +181,10 @@ public:
 			pred->next = current->next;
 		}
 
-		if (current != nullptr) {
-			std::cout << "R: unlocking current with value " << current->value << "\n";
-			current->lock.unlock();
-		} if (pred != nullptr) {
+		current->lock.unlock();
+		delete current;
+
+		if (pred != nullptr) {
 			std::cout << "R: last unlocking pred with value " << pred->value << "\n";
 
 			pred->lock.unlock();
