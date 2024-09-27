@@ -2,7 +2,7 @@
 #define lacpp_sorted_list_hpp lacpp_sorted_list_hpp
 
 #include <mutex>
-
+#include <iostream>
 /* a sorted list implementation by David Klaftenegger, 2015
  * please report bugs or suggest improvements to david.klaftenegger@it.uu.se
  */
@@ -21,6 +21,7 @@ template <typename T>
 class sorted_list
 {
 	node<T> *first = nullptr;
+
 
 public:
 	/* default implementations:
@@ -56,9 +57,7 @@ public:
 			succ->lock.lock();
 		}
 
-		while (succ != nullptr && succ->value < v)
-		{
-
+		while (succ != nullptr && succ->value < v) {
 			if (pred != nullptr) {
 				pred->lock.unlock();
 			}
@@ -69,15 +68,15 @@ public:
 			if (succ != nullptr) {
 				succ->lock.lock();
 			}
-
 		}
 
 		/* construct new node */
 		node<T> *current = new node<T>();
 		current->value = v;
-
 		/* insert new node between pred and succ */
 		current->next = succ;
+
+
 		if (pred == nullptr)
 		{
 			first = current;
@@ -86,14 +85,12 @@ public:
 		{
 			pred->next = current;
 		}
-
 		if (succ != nullptr) {
 			succ->lock.unlock();
-		}
-
-		if (pred != nullptr) {
+		} if (pred != nullptr) {
 			pred->lock.unlock();
 		}
+
 	}
 
 	void remove(T v)
@@ -105,8 +102,8 @@ public:
 		if (current != nullptr) {
 			current->lock.lock();
 		}
-		while (current != nullptr && current->value < v)
-		{
+
+		while (current != nullptr && current->value < v) {
 			if (pred != nullptr) {
 				pred->lock.unlock();
 			}
@@ -118,13 +115,14 @@ public:
 				current->lock.lock();
 			}
 		}
+
+
 		if (current == nullptr || current->value != v)
 		{
-			if (pred != nullptr) {
-				pred->lock.unlock();
-			}
 			if (current != nullptr) {
 				current->lock.unlock();
+			} if (pred != nullptr) {
+				pred->lock.unlock();
 			}
 			/* v not found */
 			return;
@@ -133,14 +131,13 @@ public:
 		if (pred == nullptr)
 		{
 			first = current->next;
-		}
-		else
-		{
+		} else {
 			pred->next = current->next;
 		}
-		delete current;
 
-		if (pred != nullptr){
+		if (current != nullptr) {
+			current->lock.unlock();
+		} if (pred != nullptr) {
 			pred->lock.unlock();
 		}
 	}
@@ -157,9 +154,8 @@ public:
 			current->lock.lock();
 		}
 
-		while (current != nullptr && current->value < v)
-		{
-			if (pred != nullptr){
+		while (current != nullptr && current->value < v) {
+			if (pred != nullptr) {
 				pred->lock.unlock();
 			}
 
@@ -170,17 +166,16 @@ public:
 				current->lock.lock();
 			}
 		}
+
+
 		/* count elements */
-		while (current != nullptr && current->value == v)
-		{
+		while (current != nullptr && current->value == v) {
 			cnt++;
-			if (pred != nullptr){
+			if (pred != nullptr) {
 				pred->lock.unlock();
 			}
-
 			pred = current;
 			current = current->next;
-
 			if (current != nullptr) {
 				current->lock.lock();
 			}

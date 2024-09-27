@@ -8,8 +8,8 @@
 //#include "sorted_list.hpp"
 //#include "sorted_list_CG.hpp"
 //#include "sorted_list_CG_TATAS.hpp"
- #include "sorted_list_FG_MCS.hpp"
-//#include "sorted_list_FG.hpp"
+//#include "sorted_list_FG_MCS.hpp"
+#include "sorted_list_FG.hpp"
 static const int DATA_VALUE_RANGE_MIN = 0;
 static const int DATA_VALUE_RANGE_MAX = 256;
 static const int DATA_PREFILL = 512;
@@ -98,6 +98,7 @@ int main(int argc, char *argv[])
 		{
 			l1.insert(uniform_dist(engine));
 		}
+		std::cout << "Third benchmark \n";
 		benchmark(threadcnt, u8"non-thread-safe mixed", [&l1](int random)
 				  { mixed(l1, random); });
 	}
