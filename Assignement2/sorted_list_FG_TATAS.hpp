@@ -1,18 +1,18 @@
-#ifndef lacpp_sorted_list_hpp
-#define lacpp_sorted_list_hpp lacpp_sorted_list_hpp
+#ifndef lacpp_sorted_list_fg_tatas_hpp
+#define lacpp_sorted_list_fg_tatas_hpp lacpp_sorted_list_fg_tatas_hpp
 
 #include <atomic>
 #include <thread>  // for std::this_thread::yield
 
-/* struct for list nodes */
+/* struct for list node_fg_tatass */
 template <typename T>
-struct node
+struct node_fg_tatas
 {
     T value;
-    node<T> *next;
-    std::atomic<bool> lock{false};  // TATAS lock for each node
+    node_fg_tatas<T> *next;
+    std::atomic<bool> lock{false};  // TATAS lock for each node_fg_tatas
 
-    // Helper function to acquire the node lock
+    // Helper function to acquire the node_fg_tatas lock
     void acquire_lock()
     {
         while (true)
@@ -30,7 +30,7 @@ struct node
         }
     }
 
-    // Helper function to release the node lock
+    // Helper function to release the node_fg_tatas lock
     void release_lock()
     {
         lock.store(false, std::memory_order_release);  // Release the lock
@@ -39,10 +39,10 @@ struct node
 
 /* non-concurrent sorted singly-linked list with fine-grained TATAS lock */
 template <typename T>
-class sorted_list
+class sorted_list_fg_tatas
 {
 	std::atomic<bool> head_lock{false};
-	node<T> *first = nullptr;
+	node_fg_tatas<T> *first = nullptr;
 
 public:
 	/* default implementations:
@@ -55,12 +55,12 @@ public:
 	 * The first is required due to the others,
 	 * which are explicitly listed due to the rule of five.
 	 */
-	sorted_list() = default;
-	sorted_list(const sorted_list<T> &other) = default;
-	sorted_list(sorted_list<T> &&other) = default;
-	sorted_list<T> &operator=(const sorted_list<T> &other) = default;
-	sorted_list<T> &operator=(sorted_list<T> &&other) = default;
-	~sorted_list()
+	sorted_list_fg_tatas() = default;
+	sorted_list_fg_tatas(const sorted_list_fg_tatas<T> &other) = default;
+	sorted_list_fg_tatas(sorted_list_fg_tatas<T> &&other) = default;
+	sorted_list_fg_tatas<T> &operator=(const sorted_list_fg_tatas<T> &other) = default;
+	sorted_list_fg_tatas<T> &operator=(sorted_list_fg_tatas<T> &&other) = default;
+	~sorted_list_fg_tatas()
 	{
 		while (first != nullptr)
 		{
@@ -70,11 +70,11 @@ public:
 	/* insert v into the list */
 	void insert(T v)
 	{
-		// lock head in order to acquire the first nodes
+		// lock head in order to acquire the first node_fg_tatass
 		acquire_lock(&head_lock);
 		/* first find position */
-		node<T> *pred = nullptr;
-		node<T> *succ = first;
+		node_fg_tatas<T> *pred = nullptr;
+		node_fg_tatas<T> *succ = first;
 
 		if (succ != nullptr) {
 			acquire_lock(&succ->lock);
@@ -95,10 +95,10 @@ public:
 			}
 		}
 
-		/* construct new node */
-		node<T> *current = new node<T>();
+		/* construct new node_fg_tatas */
+		node_fg_tatas<T> *current = new node_fg_tatas<T>();
 		current->value = v;
-		/* insert new node between pred and succ */
+		/* insert new node_fg_tatas between pred and succ */
 		current->next = succ;
 
 
@@ -122,8 +122,8 @@ public:
 	{
 		acquire_lock(&head_lock);
 		/* first find position */
-		node<T> *pred = nullptr;
-		node<T> *current = first;
+		node_fg_tatas<T> *pred = nullptr;
+		node_fg_tatas<T> *current = first;
 
 		if (current != nullptr) {
 			acquire_lock(&current->lock);
@@ -175,8 +175,8 @@ public:
 		acquire_lock(&head_lock);
 		std::size_t cnt = 0;
 
-		node<T> *pred = nullptr;
-		node<T> *current = first;
+		node_fg_tatas<T> *pred = nullptr;
+		node_fg_tatas<T> *current = first;
 
 		if (current != nullptr) {
 			acquire_lock(&current->lock);
@@ -243,4 +243,4 @@ public:
 	}
 };
 
-#endif // lacpp_sorted_list_hpp
+#endif // lacpp_sorted_list_fg_tatas_hpp
