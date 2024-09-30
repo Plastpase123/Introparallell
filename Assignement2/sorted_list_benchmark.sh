@@ -15,8 +15,8 @@ tvalues=(1 2 4 8 16 32)
 for t in "${tvalues[@]}"; do
     # Run the command and append the output to the file
     echo "Running ./benchmark_example.o with threads=$t"
-    result=$(./benchmark_example.o $w $t $o)
-    echo "w=$w, threads=$t, Result:$result" >> "$output_file"
+    result=$(./benchmark_example.o $t)
+    echo "threads=$t, Result:$result" >> "$output_file"
 done
 
 echo "All results have been written to $output_file"

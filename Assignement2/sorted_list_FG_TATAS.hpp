@@ -229,6 +229,10 @@ void remove(T v)
         {
             curr->release_lock();
         }
+		if (prev != nullptr)
+		{
+			prev->release_lock();
+		}
 
         return cnt;
     }
