@@ -13,15 +13,10 @@
 #include "sorted_list_CG_TATAS.hpp"
 #include "sorted_list_FG.hpp"
 #include "sorted_list_FG_TATAS.hpp"
-<<<<<<< HEAD
-// #include "sorted_list_FG_MCS.hpp"
-// #include "sorted_list_CG_MCS.hpp"
-=======
 
 // DOES NOT WORK
 //  #include "sorted_list_FG_MCS.hpp"
 //  #include "sorted_list_CG_MCS.hpp"
->>>>>>> cc6cc495d480fef8db376519d289f594d408ba62
 
 static const int DATA_VALUE_RANGE_MIN = 0;
 static const int DATA_VALUE_RANGE_MAX = 256;
@@ -116,7 +111,10 @@ int main(int argc, char *argv[])
 	} */
 
 	{
-		std::cout << "\n====== BENCHMARKING SORTED LIST CG ======\n";
+		std::cout << "Course grained\n"
+				  << std::endl;
+	}
+	{
 		sorted_list_cg<int> l1;
 		/* prefill list with 1024 elements */
 		for (int i = 0; i < DATA_PREFILL; i++)
@@ -145,7 +143,10 @@ int main(int argc, char *argv[])
 				std::cout << "===================================== \n";
 	}
 	{
-		std::cout << "\n====== BENCHMARKING SORTED LIST CG TATAS ======\n";
+		std::cout << "\nCourse grained TATAS\n"
+				  << std::endl;
+	}
+	{
 		sorted_list_cg_tatas<int> l1;
 		/* prefill list with 1024 elements */
 		for (int i = 0; i < DATA_PREFILL; i++)
@@ -175,8 +176,10 @@ int main(int argc, char *argv[])
 
 	}
 	{
-		std::cout << "\n====== BENCHMARKING SORTED LIST FG ====== \n";
-
+		std::cout << "\nFine grained\n"
+				  << std::endl;
+	}
+	{
 		sorted_list_fg<int> l1;
 		/* prefill list with 1024 elements */
 		for (int i = 0; i < DATA_PREFILL; i++)
@@ -201,6 +204,10 @@ int main(int argc, char *argv[])
 		std::cout << "Third benchmark \n";
 		benchmark(threadcnt, u8"Fine grained mixed", [&l1](int random)
 				  { mixed(l1, random); });
+	}
+	{
+		std::cout << "\nFine grained TATAS\n"
+				  << std::endl;
 	}
 	{
 		sorted_list_fg_tatas<int> l1;
