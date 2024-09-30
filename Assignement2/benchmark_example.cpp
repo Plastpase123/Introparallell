@@ -111,6 +111,10 @@ int main(int argc, char *argv[])
 	} */
 
 	{
+		std::cout << "Course grained\n"
+				  << std::endl;
+	}
+	{
 		sorted_list_cg<int> l1;
 		/* prefill list with 1024 elements */
 		for (int i = 0; i < DATA_PREFILL; i++)
@@ -135,6 +139,10 @@ int main(int argc, char *argv[])
 		std::cout << "Third benchmark \n";
 		benchmark(threadcnt, u8"Course grained mixed", [&l1](int random)
 				  { mixed(l1, random); });
+	}
+	{
+		std::cout << "\nCourse grained TATAS\n"
+				  << std::endl;
 	}
 	{
 		sorted_list_cg_tatas<int> l1;
@@ -163,6 +171,10 @@ int main(int argc, char *argv[])
 				  { mixed(l1, random); });
 	}
 	{
+		std::cout << "\nFine grained\n"
+				  << std::endl;
+	}
+	{
 		sorted_list_fg<int> l1;
 		/* prefill list with 1024 elements */
 		for (int i = 0; i < DATA_PREFILL; i++)
@@ -187,6 +199,10 @@ int main(int argc, char *argv[])
 		std::cout << "Third benchmark \n";
 		benchmark(threadcnt, u8"Fine grained mixed", [&l1](int random)
 				  { mixed(l1, random); });
+	}
+	{
+		std::cout << "\nFine grained TATAS\n"
+				  << std::endl;
 	}
 	{
 		sorted_list_fg_tatas<int> l1;
