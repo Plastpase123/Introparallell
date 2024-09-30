@@ -41,7 +41,7 @@ struct node_fg_tatas
 template <typename T>
 class sorted_list_fg_tatas
 {
-	std::atomic<bool> head_lock{false};
+	std::atomic<bool> list_head_lock{false};
 	node_fg_tatas<T> *first = nullptr;
 
 public:
@@ -71,7 +71,8 @@ public:
 	void insert(T v)
 	{
 		// lock head in order to acquire the first node_fg_tatass
-		acquire_lock(&head_lock);
+		acquire_lock(&list_head_lock);
+		bool list_head_locked = true;
 		/* first find position */
 		node_fg_tatas<T> *pred = nullptr;
 		node_fg_tatas<T> *succ = first;
@@ -85,7 +86,10 @@ public:
 				release_lock(&pred->lock);
 			}
 
-			release_lock(&head_lock);
+			if (list_head_locked) {
+				list_head_locked = false;
+				release_lock(&list_head_lock);
+			}
 
 			pred = succ;
 			succ = succ->next;
@@ -104,7 +108,6 @@ public:
 
 		if (pred == nullptr) {
 			first = current;
-			release_lock(&head_lock);
 		} else {
 			pred->next = current;
 		}
@@ -116,11 +119,16 @@ public:
 		if (pred != nullptr) {
 			release_lock(&pred->lock);
 		}
+		if (list_head_locked) {
+			list_head_locked = false;
+			release_lock(&list_head_lock);
+		}
 	}
 
 	void remove(T v)
 	{
-		acquire_lock(&head_lock);
+		acquire_lock(&list_head_lock);
+		bool list_head_locked = true;
 		/* first find position */
 		node_fg_tatas<T> *pred = nullptr;
 		node_fg_tatas<T> *current = first;
@@ -134,7 +142,10 @@ public:
 				release_lock(&pred->lock);
 			}
 
-			release_lock(&head_lock);
+			if (list_head_locked) {
+				list_head_locked = false;
+				release_lock(&list_head_lock);
+			}
 
 			pred = current;
 			current = current->next;
@@ -151,7 +162,10 @@ public:
 			if (pred != nullptr) {
 				release_lock(&pred->lock);
 			}
-			release_lock(&head_lock);
+			if (list_head_locked) {
+				list_head_locked = false;
+				release_lock(&list_head_lock);
+			}
 			/* v not found */
 			return;
 		}
@@ -163,16 +177,20 @@ public:
 		}
 
 		delete current;
-		release_lock(&head_lock);
 		if (pred != nullptr) {
 			release_lock(&pred->lock);
+		}
+		if (list_head_locked) {
+			list_head_locked = false;
+			release_lock(&list_head_lock);
 		}
 	}
 
 	/* count elements with value v in the list */
 	std::size_t count(T v)
 	{
-		acquire_lock(&head_lock);
+		acquire_lock(&list_head_lock);
+		bool list_head_locked = true;
 		std::size_t cnt = 0;
 
 		node_fg_tatas<T> *pred = nullptr;
@@ -182,26 +200,15 @@ public:
 			acquire_lock(&current->lock);
 		}
 
-		while (current != nullptr && current->value < v) {
+		while (current != nullptr && current->value <= v) {
 			if (pred != nullptr) {
 				release_lock(&pred->lock);
 			}
-			release_lock(&head_lock);
-			pred = current;
-			current = current->next;
-
-			if (current != nullptr) {
-				acquire_lock(&current->lock);
+			if (list_head_locked) {
+				list_head_locked = false;
+				release_lock(&list_head_lock);
 			}
-		}
-		release_lock(&head_lock);
-		/* count elements */
-		while (current != nullptr && current->value == v) {
 			cnt++;
-			if (pred != nullptr) {
-				release_lock(&pred->lock);
-			}
-
 			pred = current;
 			current = current->next;
 
@@ -209,6 +216,7 @@ public:
 				acquire_lock(&current->lock);
 			}
 		}
+
 
 		if (current != nullptr) {
 			release_lock(&current->lock);
@@ -216,6 +224,10 @@ public:
 		if (pred != nullptr) {
 
 			release_lock(&pred->lock);
+		}
+		if (list_head_locked){
+			list_head_locked = false;
+			release_lock(&list_head_lock);
 		}
 		return cnt;
 	}
