@@ -1,18 +1,18 @@
-#ifndef lacpp_sorted_list_hpp
-#define lacpp_sorted_list_hpp lacpp_sorted_list_hpp
+#ifndef lacpp_sorted_list_fg_tatas_hpp
+#define lacpp_sorted_list_fg_tatas_hpp lacpp_sorted_list_fg_tatas_hpp
 
 #include <atomic>
 #include <thread>  // for std::this_thread::yield
 
-/* struct for list nodes */
+/* struct for list node_fg_tatass */
 template <typename T>
 struct node_fg_tatas
 {
     T value;
     node_fg_tatas<T> *next;
-    std::atomic<bool> lock{false};  // TATAS lock for each node
+    std::atomic<bool> lock{false};  // TATAS lock for each node_fg_tatas
 
-    // Helper function to acquire the node lock
+    // Helper function to acquire the node_fg_tatas lock
     void acquire_lock()
     {
         while (true)
@@ -30,7 +30,7 @@ struct node_fg_tatas
         }
     }
 
-    // Helper function to release the node lock
+    // Helper function to release the node_fg_tatas lock
     void release_lock()
     {
         lock.store(false, std::memory_order_release);  // Release the lock
@@ -70,7 +70,7 @@ public:
 	/* insert v into the list */
 	void insert(T v)
 	{
-		// lock head in order to acquire the first nodes
+		// lock head in order to acquire the first node_fg_tatass
 		acquire_lock(&head_lock);
 		/* first find position */
 		node_fg_tatas<T> *pred = nullptr;
@@ -95,10 +95,10 @@ public:
 			}
 		}
 
-		/* construct new node */
+		/* construct new node_fg_tatas */
 		node_fg_tatas<T> *current = new node_fg_tatas<T>();
 		current->value = v;
-		/* insert new node between pred and succ */
+		/* insert new node_fg_tatas between pred and succ */
 		current->next = succ;
 
 
