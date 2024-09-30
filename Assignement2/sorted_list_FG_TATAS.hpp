@@ -1,23 +1,43 @@
 #ifndef lacpp_sorted_list_hpp
 #define lacpp_sorted_list_hpp lacpp_sorted_list_hpp
 
-#include <mutex>
-#include <iostream>
 #include <atomic>
-/* a sorted list implementation by David Klaftenegger, 2015
- * please report bugs or suggest improvements to david.klaftenegger@it.uu.se
- */
+#include <thread>  // for std::this_thread::yield
 
 /* struct for list nodes */
 template <typename T>
 struct node
 {
-	T value;
-	node<T> *next;
-	std::atomic<bool> lock{false};
+    T value;
+    node<T> *next;
+    std::atomic<bool> lock{false};  // TATAS lock for each node
+
+    // Helper function to acquire the node lock
+    void acquire_lock()
+    {
+        while (true)
+        {
+            while (lock.load(std::memory_order_relaxed))
+            {
+                std::this_thread::yield();  // Yield to allow other threads to run
+            }
+            // Try to acquire the lock
+            bool expected = false;
+            if (lock.compare_exchange_strong(expected, true, std::memory_order_acquire))
+            {
+                break;  // Lock successfully acquired
+            }
+        }
+    }
+
+    // Helper function to release the node lock
+    void release_lock()
+    {
+        lock.store(false, std::memory_order_release);  // Release the lock
+    }
 };
 
-/* non-concurrent sorted singly-linked list */
+/* non-concurrent sorted singly-linked list with fine-grained TATAS lock */
 template <typename T>
 class sorted_list
 {

@@ -1,0 +1,12 @@
+w=, threads=1, Result:First benchmark
+non-thread-safe read / threads: 1 - thousands of operations per second: 715.813279
+Second benchmark 
+non-thread-safe update / threads: 1 - thousands of operations per second: 59.344814
+Third benchmark 
+non-thread-safe mixed / threads: 1 - thousands of operations per second: 181.216986
+w=, threads=2, Result:First benchmark
+non-thread-safe read / threads: 2 - thousands of operations per second: 462.244270
+Second benchmark 
+non-thread-safe update / threads: 2 - thousands of operations per second: 56.065943
+Third benchmark 
+non-thread-safe mixed / threads: 2 - thousands of operations per second: 150.610341

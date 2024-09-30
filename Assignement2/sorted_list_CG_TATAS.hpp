@@ -5,20 +5,20 @@
  * please report bugs or suggest improvements to david.klaftenegger@it.uu.se
  */
 
-/* struct for list nodes */
+/* struct for list node_cg_tatass */
 template <typename T>
-struct node
+struct node_cg_tatas
 {
 	T value;
-	node<T> *next;
+	node_cg_tatas<T> *next;
 };
 
 /* non-concurrent sorted singly-linked list */
 template <typename T>
-class sorted_list
+class sorted_list_cg_tatas
 {
-	node<T> *first = nullptr;
-	std::atomic<bool> m {false};
+	node_cg_tatas<T> *first = nullptr;
+	std::atomic<bool> m{false};
 
 public:
 	/* default implementations:
@@ -31,12 +31,12 @@ public:
 	 * The first is required due to the others,
 	 * which are explicitly listed due to the rule of five.
 	 */
-	sorted_list() = default;
-	sorted_list(const sorted_list<T> &other) = default;
-	sorted_list(sorted_list<T> &&other) = default;
-	sorted_list<T> &operator=(const sorted_list<T> &other) = default;
-	sorted_list<T> &operator=(sorted_list<T> &&other) = default;
-	~sorted_list()
+	sorted_list_cg_tatas() = default;
+	sorted_list_cg_tatas(const sorted_list_cg_tatas<T> &other) = default;
+	sorted_list_cg_tatas(sorted_list_cg_tatas<T> &&other) = default;
+	sorted_list_cg_tatas<T> &operator=(const sorted_list_cg_tatas<T> &other) = default;
+	sorted_list_cg_tatas<T> &operator=(sorted_list_cg_tatas<T> &&other) = default;
+	~sorted_list_cg_tatas()
 	{
 		while (first != nullptr)
 		{
@@ -48,19 +48,19 @@ public:
 	{
 		acquire_lock();
 		/* first find position */
-		node<T> *pred = nullptr;
-		node<T> *succ = first;
+		node_cg_tatas<T> *pred = nullptr;
+		node_cg_tatas<T> *succ = first;
 		while (succ != nullptr && succ->value < v)
 		{
 			pred = succ;
 			succ = succ->next;
 		}
 
-		/* construct new node */
-		node<T> *current = new node<T>();
+		/* construct new node_cg_tatas */
+		node_cg_tatas<T> *current = new node_cg_tatas<T>();
 		current->value = v;
 
-		/* insert new node between pred and succ */
+		/* insert new node_cg_tatas between pred and succ */
 		current->next = succ;
 		if (pred == nullptr)
 		{
@@ -77,8 +77,8 @@ public:
 	{
 		acquire_lock();
 		/* first find position */
-		node<T> *pred = nullptr;
-		node<T> *current = first;
+		node_cg_tatas<T> *pred = nullptr;
+		node_cg_tatas<T> *current = first;
 		while (current != nullptr && current->value < v)
 		{
 			pred = current;
@@ -109,7 +109,7 @@ public:
 		acquire_lock();
 		std::size_t cnt = 0;
 		/* first go to value v */
-		node<T> *current = first;
+		node_cg_tatas<T> *current = first;
 		while (current != nullptr && current->value < v)
 		{
 			current = current->next;
@@ -146,4 +146,4 @@ public:
 	}
 };
 
-#endif // lacpp_sorted_list_hpp
+#endif // lacpp_sorted_list_cg_tatas_hpp

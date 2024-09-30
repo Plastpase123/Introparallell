@@ -1,24 +1,24 @@
-#ifndef lacpp_sorted_list_hpp
-#define lacpp_sorted_list_hpp lacpp_sorted_list_hpp
+#ifndef lacpp_sorted_list_cg_hpp
+#define lacpp_sorted_list_cg_hpp lacpp_sorted_list_cg_hpp
 
 #include <mutex>
 /* a sorted list implementation by David Klaftenegger, 2015
  * please report bugs or suggest improvements to david.klaftenegger@it.uu.se
  */
 
-/* struct for list nodes */
+/* struct for list node_cgs */
 template <typename T>
-struct node
+struct node_cg
 {
 	T value;
-	node<T> *next;
+	node_cg<T> *next;
 };
 
 /* non-concurrent sorted singly-linked list */
 template <typename T>
 class sorted_list_cg
 {
-	node<T> *first = nullptr;
+	node_cg<T> *first = nullptr;
 	std::mutex m;
 
 public:
@@ -49,19 +49,19 @@ public:
 	{
 		std::lock_guard<std::mutex> lock(m);
 		/* first find position */
-		node<T> *pred = nullptr;
-		node<T> *succ = first;
+		node_cg<T> *pred = nullptr;
+		node_cg<T> *succ = first;
 		while (succ != nullptr && succ->value < v)
 		{
 			pred = succ;
 			succ = succ->next;
 		}
 
-		/* construct new node */
-		node<T> *current = new node<T>();
+		/* construct new node_cg */
+		node_cg<T> *current = new node_cg<T>();
 		current->value = v;
 
-		/* insert new node between pred and succ */
+		/* insert new node_cg between pred and succ */
 		current->next = succ;
 		if (pred == nullptr)
 		{
@@ -77,8 +77,8 @@ public:
 	{
 		std::lock_guard<std::mutex> lock(m);
 		/* first find position */
-		node<T> *pred = nullptr;
-		node<T> *current = first;
+		node_cg<T> *pred = nullptr;
+		node_cg<T> *current = first;
 		while (current != nullptr && current->value < v)
 		{
 			pred = current;
@@ -107,7 +107,7 @@ public:
 		std::lock_guard<std::mutex> lock(m);
 		std::size_t cnt = 0;
 		/* first go to value v */
-		node<T> *current = first;
+		node_cg<T> *current = first;
 		while (current != nullptr && current->value < v)
 		{
 			current = current->next;
