@@ -41,201 +41,206 @@ struct node
 template <typename T>
 class sorted_list
 {
-    node<T> *first = nullptr;
+	std::atomic<bool> head_lock{false};
+	node<T> *first = nullptr;
 
 public:
-    /* default implementations:
-     * default constructor, destructor, copy/move constructors, and assignment operators
-     */
-    sorted_list() = default;
-    sorted_list(const sorted_list<T> &other) = default;
-    sorted_list(sorted_list<T> &&other) = default;
-    sorted_list<T> &operator=(const sorted_list<T> &other) = default;
-    sorted_list<T> &operator=(sorted_list<T> &&other) = default;
-    ~sorted_list()
-    {
-        while (first != nullptr)
-        {
-            remove(first->value);  // Remove all nodes on destruction
-        }
-    }
-
-    /* insert v into the list */
-    void insert(T v)
-    {
-        node<T> *pred = nullptr;
-        node<T> *curr = first;
-
-        // If the list is not empty, lock the first node
-        if (curr != nullptr)
-        {
-            curr->acquire_lock();  
-        }
-
-        // Traverse the list to find the right spot for v
-        while (curr != nullptr && curr->value < v)
-        {
-            if (pred != nullptr)
-            {
-                pred->release_lock();  // Release the previous node's lock
-            }
-
-            pred = curr;
-            curr = curr->next;
-
-            if (curr != nullptr)
-            {
-                curr->acquire_lock();  // Lock the next node
-            }
-        }
-
-        // Insert new node
-        node<T> *new_node = new node<T>();
-        new_node->value = v;
-        new_node->next = curr;
-
-        if (pred == nullptr)  // Insertion at the head
-        {
-            first = new_node;
-        }
-        else
-        {
-            pred->next = new_node;
-        }
-
-        // Release locks
-        if (pred != nullptr)
-        {
-            pred->release_lock();
-        }
-        if (curr != nullptr)
-        {
-            curr->release_lock();
-        }
-    }
-
-
-/* remove v from the list */
-void remove(T v)
-{
-    node<T> *pred = nullptr;
-    node<T> *curr = first;
-
-    // If the list is empty, return immediately
-    if (curr == nullptr)
-    {
-        return;
-    }
-
-    // Lock the first node (if it exists)
-    curr->acquire_lock();
-
-    // Traverse and lock the relevant nodes
-    while (curr != nullptr && curr->value < v)
-    {
-        // Release predecessor's lock (if there was one)
-        if (pred != nullptr)
-        {
-            pred->release_lock();
-        }
-
-        // Move forward in the list
-        pred = curr;
-        curr = curr->next;
-
-        // Only acquire lock on current if it's still in the list
-        if (curr != nullptr && curr == pred->next)  // Ensure curr is valid before locking
-        {
-            curr->acquire_lock();
-        }
-    }
-
-    // If we found the node with value v, remove it
-    if (curr != nullptr && curr->value == v)
-    {
-        // If pred is null, we're removing the head
-        if (pred == nullptr)
-        {
-            first = curr->next;  // Update the head of the list
-        }
-        else
-        {
-            pred->next = curr->next;  // Bypass the current node
-        }
-
-        // Release the lock on the current node before deleting it
-        curr->release_lock();
-
-        // Now it's safe to delete the node
-        delete curr;
-        curr = nullptr;  // Set to null to avoid further access
-    }
-
-    // Release locks on any remaining nodes
-    if (pred != nullptr)
-    {
-        pred->release_lock();
-    }
-    if (curr != nullptr)
-    {
-        curr->release_lock();
-    }
-}
-
-
-
-    /* count elements with value v in the list */
-    std::size_t count(T v)
-    {
-        std::size_t cnt = 0;
-        node<T> *curr = first;
-
-        if (curr == nullptr)
-        {
-            return cnt;  // Empty list, return 0
-        }
-
-        curr->acquire_lock();  // Lock the first node
-
-        // Traverse the list to find the value v
-        while (curr != nullptr && curr->value < v)
-        {
-            node<T> *prev = curr;
-            curr = curr->next;
-
-            if (curr != nullptr)
-            {
-                curr->acquire_lock();  // Lock the next node
-            }
-            prev->release_lock();  // Release the previous node
-        }
-
-        // Count occurrences of value v
-        while (curr != nullptr && curr->value == v)
-        {
-            cnt++;
-            node<T> *prev = curr;
-            curr = curr->next;
-
-            if (curr != nullptr)
-            {
-                curr->acquire_lock();  // Lock the next node
-            }
-            prev->release_lock();  // Release the previous node
-        }
-
-        // Release the last lock if the list ends
-        if (curr != nullptr)
-        {
-            curr->release_lock();
-        }
-		if (prev != nullptr)
+	/* default implementations:
+	 * default constructor
+	 * copy constructor (note: shallow copy)
+	 * move constructor
+	 * copy assignment operator (note: shallow copy)
+	 * move assignment operator
+	 *
+	 * The first is required due to the others,
+	 * which are explicitly listed due to the rule of five.
+	 */
+	sorted_list() = default;
+	sorted_list(const sorted_list<T> &other) = default;
+	sorted_list(sorted_list<T> &&other) = default;
+	sorted_list<T> &operator=(const sorted_list<T> &other) = default;
+	sorted_list<T> &operator=(sorted_list<T> &&other) = default;
+	~sorted_list()
+	{
+		while (first != nullptr)
 		{
-			prev->release_lock();
+			remove(first->value);
+		}
+	}
+	/* insert v into the list */
+	void insert(T v)
+	{
+		// lock head in order to acquire the first nodes
+		acquire_lock(&head_lock);
+		/* first find position */
+		node<T> *pred = nullptr;
+		node<T> *succ = first;
+
+		if (succ != nullptr) {
+			acquire_lock(&succ->lock);
 		}
 
-        return cnt;
-    }
+		while (succ != nullptr && succ->value < v) {
+			if (pred != nullptr) {
+				release_lock(&pred->lock);
+			}
+
+			release_lock(&head_lock);
+
+			pred = succ;
+			succ = succ->next;
+
+			if (succ != nullptr) {
+				acquire_lock(&succ->lock);
+			}
+		}
+
+		/* construct new node */
+		node<T> *current = new node<T>();
+		current->value = v;
+		/* insert new node between pred and succ */
+		current->next = succ;
+
+
+		if (pred == nullptr) {
+			first = current;
+			release_lock(&head_lock);
+		} else {
+			pred->next = current;
+		}
+
+		if (succ != nullptr) {
+			release_lock(&succ->lock);
+		}
+
+		if (pred != nullptr) {
+			release_lock(&pred->lock);
+		}
+	}
+
+	void remove(T v)
+	{
+		acquire_lock(&head_lock);
+		/* first find position */
+		node<T> *pred = nullptr;
+		node<T> *current = first;
+
+		if (current != nullptr) {
+			acquire_lock(&current->lock);
+		}
+
+		while (current != nullptr && current->value < v) {
+			if (pred != nullptr) {
+				release_lock(&pred->lock);
+			}
+
+			release_lock(&head_lock);
+
+			pred = current;
+			current = current->next;
+
+			if (current != nullptr) {
+				acquire_lock(&current->lock);
+			}
+		}
+
+		if (current == nullptr || current->value != v) {
+			if (current != nullptr) {
+				release_lock(&current->lock);
+			}
+			if (pred != nullptr) {
+				release_lock(&pred->lock);
+			}
+			release_lock(&head_lock);
+			/* v not found */
+			return;
+		}
+		/* remove current */
+		if (pred == nullptr) {
+			first = current->next;
+		} else {
+			pred->next = current->next;
+		}
+
+		delete current;
+		release_lock(&head_lock);
+		if (pred != nullptr) {
+			release_lock(&pred->lock);
+		}
+	}
+
+	/* count elements with value v in the list */
+	std::size_t count(T v)
+	{
+		acquire_lock(&head_lock);
+		std::size_t cnt = 0;
+
+		node<T> *pred = nullptr;
+		node<T> *current = first;
+
+		if (current != nullptr) {
+			acquire_lock(&current->lock);
+		}
+
+		while (current != nullptr && current->value < v) {
+			if (pred != nullptr) {
+				release_lock(&pred->lock);
+			}
+			release_lock(&head_lock);
+			pred = current;
+			current = current->next;
+
+			if (current != nullptr) {
+				acquire_lock(&current->lock);
+			}
+		}
+		release_lock(&head_lock);
+		/* count elements */
+		while (current != nullptr && current->value == v) {
+			cnt++;
+			if (pred != nullptr) {
+				release_lock(&pred->lock);
+			}
+
+			pred = current;
+			current = current->next;
+
+			if (current != nullptr) {
+				acquire_lock(&current->lock);
+			}
+		}
+
+		if (current != nullptr) {
+			release_lock(&current->lock);
+		}
+		if (pred != nullptr) {
+
+			release_lock(&pred->lock);
+		}
+		return cnt;
+	}
+
+	void acquire_lock(std::atomic<bool> *lock)
+	{
+		while (true)
+		{
+			while (lock->load())
+			{
+				std::this_thread::yield();
+			}
+
+			bool expected = false;
+			if (lock->compare_exchange_strong(expected, true))
+			{
+				break;
+			}
+		}
+	}
+
+	void release_lock(std::atomic<bool> *lock)
+	{
+		lock->store(false);
+	}
 };
 
 #endif // lacpp_sorted_list_hpp
