@@ -175,7 +175,7 @@ public:
 		} else {
 			pred->next = current->next;
 		}
-
+		release_lock(&current->lock);
 		delete current;
 		if (pred != nullptr) {
 			release_lock(&pred->lock);
