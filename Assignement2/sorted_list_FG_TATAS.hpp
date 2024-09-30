@@ -21,6 +21,7 @@ struct node
 template <typename T>
 class sorted_list
 {
+	std::atomic<bool> head_lock{false};
 	node<T> *first = nullptr;
 
 public:
@@ -49,28 +50,28 @@ public:
 	/* insert v into the list */
 	void insert(T v)
 	{
+		// lock head in order to acquire the first nodes
+		acquire_lock(&head_lock);
 		/* first find position */
 		node<T> *pred = nullptr;
 		node<T> *succ = first;
 
-		if (succ != nullptr)
-		{
-			acquire_lock(succ);
+		if (succ != nullptr) {
+			acquire_lock(&succ->lock);
 		}
 
-		while (succ != nullptr && succ->value < v)
-		{
-			if (pred != nullptr)
-			{
-				release_lock(pred);
+		while (succ != nullptr && succ->value < v) {
+			if (pred != nullptr) {
+				release_lock(&pred->lock);
 			}
+
+			release_lock(&head_lock);
 
 			pred = succ;
 			succ = succ->next;
 
-			if (succ != nullptr)
-			{
-				acquire_lock(succ);
+			if (succ != nullptr) {
+				acquire_lock(&succ->lock);
 			}
 		}
 
@@ -80,161 +81,145 @@ public:
 		/* insert new node between pred and succ */
 		current->next = succ;
 
-		if (pred == nullptr)
-		{
+
+		if (pred == nullptr) {
 			first = current;
-		}
-		else
-		{
+			release_lock(&head_lock);
+		} else {
 			pred->next = current;
 		}
-		if (succ != nullptr)
-		{
-			release_lock(succ);
+
+		if (succ != nullptr) {
+			release_lock(&succ->lock);
 		}
-		if (pred != nullptr)
-		{
-			release_lock(pred);
+
+		if (pred != nullptr) {
+			release_lock(&pred->lock);
 		}
 	}
 
 	void remove(T v)
 	{
+		acquire_lock(&head_lock);
 		/* first find position */
 		node<T> *pred = nullptr;
 		node<T> *current = first;
 
-		if (current != nullptr)
-		{
-			acquire_lock(current);
+		if (current != nullptr) {
+			acquire_lock(&current->lock);
 		}
 
-		while (current != nullptr && current->value < v)
-		{
-			if (pred != nullptr)
-			{
-				acquire_lock(pred);
+		while (current != nullptr && current->value < v) {
+			if (pred != nullptr) {
+				release_lock(&pred->lock);
 			}
+
+			release_lock(&head_lock);
 
 			pred = current;
 			current = current->next;
 
-			if (current != nullptr)
-			{
-				acquire_lock(current);
+			if (current != nullptr) {
+				acquire_lock(&current->lock);
 			}
 		}
 
-		if (current == nullptr || current->value != v)
-		{
-			if (current != nullptr)
-			{
-				release_lock(current);
+		if (current == nullptr || current->value != v) {
+			if (current != nullptr) {
+				release_lock(&current->lock);
 			}
-			if (pred != nullptr)
-			{
-				release_lock(pred);
+			if (pred != nullptr) {
+				release_lock(&pred->lock);
 			}
+			release_lock(&head_lock);
 			/* v not found */
 			return;
 		}
 		/* remove current */
-		if (pred == nullptr)
-		{
+		if (pred == nullptr) {
 			first = current->next;
-		}
-		else
-		{
+		} else {
 			pred->next = current->next;
 		}
 
-		release_lock(current);
 		delete current;
-		if (pred != nullptr)
-		{
-			release_lock(pred);
+		release_lock(&head_lock);
+		if (pred != nullptr) {
+			release_lock(&pred->lock);
 		}
 	}
 
 	/* count elements with value v in the list */
 	std::size_t count(T v)
 	{
+		acquire_lock(&head_lock);
 		std::size_t cnt = 0;
 
 		node<T> *pred = nullptr;
 		node<T> *current = first;
 
-		if (current != nullptr)
-		{
-			acquire_lock(current);
+		if (current != nullptr) {
+			acquire_lock(&current->lock);
 		}
 
-		while (current != nullptr && current->value < v)
-		{
-			if (pred != nullptr)
-			{
-				release_lock(pred);
+		while (current != nullptr && current->value < v) {
+			if (pred != nullptr) {
+				release_lock(&pred->lock);
 			}
-
+			release_lock(&head_lock);
 			pred = current;
 			current = current->next;
 
-			if (current != nullptr)
-			{
-				acquire_lock(current);
+			if (current != nullptr) {
+				acquire_lock(&current->lock);
 			}
 		}
-
+		release_lock(&head_lock);
 		/* count elements */
-		while (current != nullptr && current->value == v)
-		{
+		while (current != nullptr && current->value == v) {
 			cnt++;
-			if (pred != nullptr)
-			{
-				release_lock(pred);
+			if (pred != nullptr) {
+				release_lock(&pred->lock);
 			}
+
 			pred = current;
 			current = current->next;
-			if (current != nullptr)
-			{
-				acquire_lock(current);
+
+			if (current != nullptr) {
+				acquire_lock(&current->lock);
 			}
 		}
 
-		if (current != nullptr)
-		{
-			release_lock(current);
+		if (current != nullptr) {
+			release_lock(&current->lock);
 		}
-		if (pred != nullptr)
-		{
-			acquire_lock(pred);
+		if (pred != nullptr) {
+
+			release_lock(&pred->lock);
 		}
 		return cnt;
 	}
 
-	void acquire_lock(node<T> *n)
+	void acquire_lock(std::atomic<bool> *lock)
 	{
-		std::cout << "Acquiring lock for node with value: " << n->value << std::endl;
 		while (true)
 		{
-			while (n->lock.load())
+			while (lock->load())
 			{
 				std::this_thread::yield();
 			}
 
 			bool expected = false;
-			if (n->lock.compare_exchange_strong(expected, true))
+			if (lock->compare_exchange_strong(expected, true))
 			{
-				std::cout << "Lock acquired for node with value: " << n->value << std::endl;
 				break;
 			}
 		}
 	}
 
-	void release_lock(node<T> *n)
+	void release_lock(std::atomic<bool> *lock)
 	{
-		std::cout << "Releasing lock for node with value: " << n->value << std::endl;
-		n->lock.store(false);
+		lock->store(false);
 	}
 };
 

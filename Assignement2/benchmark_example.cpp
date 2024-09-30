@@ -9,10 +9,10 @@
 //#include "sorted_list_CG.hpp"
 //#include "sorted_list_CG_TATAS.hpp"
 //#include "sorted_list_FG_MCS.hpp"
-#include "sorted_list_CG_MCS.hpp"
+//#include "sorted_list_CG_MCS.hpp"
 
 //#include "sorted_list_FG.hpp"
-//#include "sorted_list_FG_TATAS.hpp"
+#include "sorted_list_FG_TATAS.hpp"
 static const int DATA_VALUE_RANGE_MIN = 0;
 static const int DATA_VALUE_RANGE_MAX = 256;
 static const int DATA_PREFILL = 512;

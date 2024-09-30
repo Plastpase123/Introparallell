@@ -9,31 +9,30 @@
  */
 
 thread_local MCSLock::QNode MCSLock::qnode;
-
 void MCSLock::lock() {
-	qnode.next.store(nullptr, std::memory_order_release);
-    QNode* predNode = tail.exchange(&qnode, std::memory_order_relaxed);
+	qnode.next.store(nullptr);
+    QNode* predNode = tail.exchange(&qnode);
 
     if (predNode != nullptr) {
-		qnode.locked.store(true, std::memory_order_release);
-		predNode->next.store(&qnode, std::memory_order_release);
-        while (qnode.locked.load(std::memory_order_acquire)) {}
+		qnode.locked.store(true);
+		predNode->next.store(&qnode);
+        while (qnode.locked.load()) {}
      }
 }
 
 void MCSLock::unlock() {
-	QNode* successor = qnode.next.load(std::memory_order_acquire);
+	QNode* successor = qnode.next.load();
 	if (successor == nullptr) {
 		QNode* expected = &qnode;
-		if (tail.compare_exchange_strong(expected, nullptr, std::memory_order_release, std::memory_order_relaxed)) {
+		if (tail.compare_exchange_strong(expected, nullptr)) {
 			return;
 		}
 		while (successor == nullptr){
-			successor = qnode.next.load(std::memory_order_acquire);
+			successor = qnode.next.load();
 		}
 	}
-	successor->locked.store(false, std::memory_order_release);
-	successor->next.store(nullptr, std::memory_order_release);
+	successor->locked.store(false);
+	successor->next.store(nullptr);
 
 }
 
