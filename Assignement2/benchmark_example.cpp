@@ -9,7 +9,7 @@
 #include "sorted_list_CG.hpp"
 #include "sorted_list_CG_TATAS.hpp"
 #include "sorted_list_FG.hpp"
-// #include "sorted_list_FG_TATAS.hpp"
+#include "sorted_list_FG_TATAS.hpp"
 // #include "sorted_list_FG_MCS.hpp"
 // #include "sorted_list_CG_MCS.hpp"
 
@@ -106,6 +106,7 @@ int main(int argc, char *argv[])
 	} */
 
 	{
+		std::cout << "\n====== BENCHMARKING SORTED LIST CG ======\n";
 		sorted_list_cg<int> l1;
 		/* prefill list with 1024 elements */
 		for (int i = 0; i < DATA_PREFILL; i++)
@@ -118,6 +119,7 @@ int main(int argc, char *argv[])
 		std::cout << "Second benchmark \n";
 		benchmark(threadcnt, u8"non-thread-safe update", [&l1](int random)
 				  { update(l1, random); });
+
 	}
 	{
 		/* start with fresh list: update test left list in random size */
@@ -130,8 +132,10 @@ int main(int argc, char *argv[])
 		std::cout << "Third benchmark \n";
 		benchmark(threadcnt, u8"non-thread-safe mixed", [&l1](int random)
 				  { mixed(l1, random); });
+				std::cout << "===================================== \n";
 	}
 	{
+		std::cout << "\n====== BENCHMARKING SORTED LIST CG TATAS ======\n";
 		sorted_list_cg_tatas<int> l1;
 		/* prefill list with 1024 elements */
 		for (int i = 0; i < DATA_PREFILL; i++)
@@ -144,6 +148,7 @@ int main(int argc, char *argv[])
 		std::cout << "Second benchmark \n";
 		benchmark(threadcnt, u8"non-thread-safe update", [&l1](int random)
 				  { update(l1, random); });
+
 	}
 	{
 		/* start with fresh list: update test left list in random size */
@@ -156,8 +161,12 @@ int main(int argc, char *argv[])
 		std::cout << "Third benchmark \n";
 		benchmark(threadcnt, u8"non-thread-safe mixed", [&l1](int random)
 				  { mixed(l1, random); });
+		std::cout << "\n===================================== \n";
+
 	}
 	{
+		std::cout << "\n====== BENCHMARKING SORTED LIST FG ====== \n";
+
 		sorted_list_fg<int> l1;
 		/* prefill list with 1024 elements */
 		for (int i = 0; i < DATA_PREFILL; i++)
@@ -182,7 +191,42 @@ int main(int argc, char *argv[])
 		std::cout << "Third benchmark \n";
 		benchmark(threadcnt, u8"non-thread-safe mixed", [&l1](int random)
 				  { mixed(l1, random); });
+
+				std::cout << "===================================== \n";
 	}
+
+
+	{
+		std::cout << "\n====== BENCHMARKING SORTED LIST FG TATAS ====== \n";
+
+		sorted_list_fg_tatas<int> l1;
+		/* prefill list with 1024 elements */
+		for (int i = 0; i < DATA_PREFILL; i++)
+		{
+			l1.insert(uniform_dist(engine));
+		}
+		std::cout << "First benchmark\n";
+		benchmark(threadcnt, u8"non-thread-safe read", [&l1](int random)
+				  { read(l1, random); });
+		std::cout << "Second benchmark \n";
+		benchmark(threadcnt, u8"non-thread-safe update", [&l1](int random)
+				  { update(l1, random); });
+	}
+	{
+		/* start with fresh list: update test left list in random size */
+		sorted_list_fg_tatas<int> l1;
+		/* prefill list with 1024 elements */
+		for (int i = 0; i < DATA_PREFILL; i++)
+		{
+			l1.insert(uniform_dist(engine));
+		}
+		std::cout << "Third benchmark \n";
+		benchmark(threadcnt, u8"non-thread-safe mixed", [&l1](int random)
+				  { mixed(l1, random); });
+
+				std::cout << "===================================== \n";
+	}
+
 
 	return EXIT_SUCCESS;
 }

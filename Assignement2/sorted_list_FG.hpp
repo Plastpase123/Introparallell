@@ -20,6 +20,8 @@ struct node_fg
 template <typename T>
 class sorted_list_fg
 {
+	std::mutex list_head_lock;
+	//bool list_head_locked = false;
 	node_fg<T> *first = nullptr;
 
 public:
@@ -48,27 +50,31 @@ public:
 	/* insert v into the list */
 	void insert(T v)
 	{
+		list_head_lock.lock();
+		bool list_head_locked = true;
 		/* first find position */
 		node_fg<T> *pred = nullptr;
 		node_fg<T> *succ = first;
 
-		if (succ != nullptr)
-		{
+		if (succ != nullptr) {
 			succ->lock.lock();
 		}
 
-		while (succ != nullptr && succ->value < v)
-		{
-			if (pred != nullptr)
-			{
+		while (succ != nullptr && succ->value < v) {
+			if (pred != nullptr) {
 				pred->lock.unlock();
+			}
+
+			// unlock head
+			if (list_head_locked) {
+				list_head_locked = false;
+				list_head_lock.unlock();
 			}
 
 			pred = succ;
 			succ = succ->next;
 
-			if (succ != nullptr)
-			{
+			if (succ != nullptr) {
 				succ->lock.lock();
 			}
 		}
@@ -76,137 +82,137 @@ public:
 		/* construct new node_fg */
 		node_fg<T> *current = new node_fg<T>();
 		current->value = v;
+
+
 		/* insert new node_fg between pred and succ */
 		current->next = succ;
 
-		if (pred == nullptr)
-		{
+
+		if (pred == nullptr) {
 			first = current;
-		}
-		else
-		{
+		} else {
 			pred->next = current;
 		}
-		if (succ != nullptr)
-		{
+
+		if (succ != nullptr) {
 			succ->lock.unlock();
 		}
-		if (pred != nullptr)
-		{
+		if (pred != nullptr) {
 			pred->lock.unlock();
+		}
+		if (list_head_locked) {
+			list_head_locked = false;
+			list_head_lock.unlock();
 		}
 	}
 
-	void remove(T v)
-	{
+	void remove(T v) {
+		list_head_lock.lock();
+		bool list_head_locked = true;
+
 		/* first find position */
 		node_fg<T> *pred = nullptr;
 		node_fg<T> *current = first;
 
-		if (current != nullptr)
-		{
+		if (current != nullptr) {
 			current->lock.lock();
 		}
 
-		while (current != nullptr && current->value < v)
-		{
-			if (pred != nullptr)
-			{
+		while (current != nullptr && current->value < v){
+			if (pred != nullptr) {
 				pred->lock.unlock();
 			}
 
+			if (list_head_locked) {
+				list_head_locked = false;
+				list_head_lock.unlock();
+			}
 			pred = current;
 			current = current->next;
 
-			if (current != nullptr)
-			{
+			if (current != nullptr) {
 				current->lock.lock();
 			}
 		}
 
-		if (current == nullptr || current->value != v)
-		{
-			if (current != nullptr)
-			{
+		if (current == nullptr || current->value != v) {
+			if (current != nullptr) {
 				current->lock.unlock();
 			}
-			if (pred != nullptr)
-			{
+			if (pred != nullptr) {
 				pred->lock.unlock();
+			}
+			if (list_head_locked) {
+				list_head_locked = false;
+				list_head_lock.unlock();
 			}
 			/* v not found */
 			return;
 		}
 		/* remove current */
-		if (pred == nullptr)
-		{
+		if (pred == nullptr) {
 			first = current->next;
-		}
-		else
-		{
+		} else {
 			pred->next = current->next;
 		}
 		current->lock.unlock();
 		delete current;
 
-		if (pred != nullptr)
-		{
+		if (pred != nullptr) {
 			pred->lock.unlock();
+		}
+
+		if (list_head_locked) {
+			list_head_locked = false;
+			list_head_lock.unlock();
 		}
 	}
 
 	/* count elements with value v in the list */
-	std::size_t count(T v)
-	{
+	std::size_t count(T v) {
+		list_head_lock.lock();
+		bool list_head_locked = true;
+
 		std::size_t cnt = 0;
+		node_fg<T>* pred = nullptr;
+		node_fg<T>* current = first;
 
-		node_fg<T> *pred = nullptr;
-		node_fg<T> *current = first;
-
-		if (current != nullptr)
-		{
+		// Lock the first node
+		if (current != nullptr) {
 			current->lock.lock();
 		}
 
-		while (current != nullptr && current->value < v)
-		{
-			if (pred != nullptr)
-			{
-				pred->lock.unlock();
+		// Traverse the list
+		while (current != nullptr && current->value <= v) {
+			if (pred != nullptr) {
+				pred->lock.unlock();  // Unlock predecessor
 			}
 
-			pred = current;
-			current = current->next;
-
-			if (current != nullptr)
-			{
-				current->lock.lock();
+			if (list_head_locked) {
+				list_head_locked = false;
+				list_head_lock.unlock();
 			}
-		}
 
-		/* count elements */
-		while (current != nullptr && current->value == v)
-		{
-			cnt++;
-			if (pred != nullptr)
-			{
-				pred->lock.unlock();
+			if (current->value == v) {
+				cnt++;
 			}
 			pred = current;
 			current = current->next;
-			if (current != nullptr)
-			{
-				current->lock.lock();
+			if (current != nullptr) {
+				current->lock.lock();  // Lock the next node
 			}
 		}
 
-		if (current != nullptr)
-		{
+
+		if (current != nullptr) {
 			current->lock.unlock();
 		}
-		if (pred != nullptr)
-		{
+		if (pred != nullptr) {
 			pred->lock.unlock();
+		}
+		if (list_head_locked) {
+			list_head_locked = false;
+			list_head_lock.unlock();
 		}
 		return cnt;
 	}
