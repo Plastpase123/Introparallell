@@ -1,38 +1,45 @@
-// #include <omp.h>
 #include <iostream>
-/* static scheduling of matrix multiplication loops */
-
-void print_matrix(int matrix[100][100], int dim)
+#include <string>
+#include <chrono>
+#include <omp.h>
+#include <bits/stdc++.h>
+#include <vector>
+void usage(char *program)
 {
-    std::cout << "Matrix:" << std::endl;
-    for (int i = 0; i < dim; i++)
-    {
-        for (int j = 0; j < dim; j++)
-        {
-            std::cout << matrix[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << std::endl;
+    std::cout << "Usage: " << program << " dim threads" << std::endl;
+    exit(1);
 }
 
 int main(int argc, char *argv[])
 {
-    int dim = 100;
-    int a[100][100];
-    int b[100][100];
-    int c[100][100];
 
-    // Initialize matrices
-    for (int i = 0; i < dim; i++)
+    if (argc != 3)
     {
-        for (int j = 0; j < dim; j++)
+        usage(argv[0]);
+    }
+
+    int dim = std::atoi(argv[1]);
+    int nthrds = std::atoi(argv[2]);
+    std::vector<std::vector<int>> a(dim, std::vector<int>(dim));
+    std::vector<std::vector<int>> b(dim, std::vector<int>(dim));
+    std::vector<std::vector<int>> c(dim, std::vector<int>(dim));
+
+    srand(time(0));
+    // Fill the matrix with random integers
+    for (int i = 0; i < dim; ++i)
+    {
+        for (int j = 0; j < dim; ++j)
         {
-            a[i][j] = i + j;
-            b[i][j] = i - j;
+            a[i][j] = std::rand() % 10; // Random integers between 0 and 99
+            b[i][j] = std::rand() % 10;
         }
     }
 
+    auto start_time = std::chrono::system_clock::now();
+
+    /* static scheduling of matrix multiplication loops */
+#pragma omp parallel default(private) shared(a, b, c, dim) num_threads(nthrds)
+#pragma omp for schedule(static)
     for (int i = 0; i < dim; i++)
     {
         for (int j = 0; j < dim; j++)
@@ -44,7 +51,20 @@ int main(int argc, char *argv[])
             }
         }
     }
-    print_matrix(a, dim);
-    print_matrix(b, dim);
-    print_matrix(c, dim);
+    std::chrono::duration<double> duration =
+        (std::chrono::system_clock::now() - start_time);
+    // *** timing ends here ***
+    std::cout << "Finished in " << duration.count() << " seconds (wall clock).\n";
+
+    // Output the matrix
+    /*
+    std::cout << "The " << dim << "x" << dim << " matrix is: \n";
+    for (int i = 0; i < dim; ++i) {
+      for (int j = 0; j < dim; ++j) {
+        std::cout << c[i][j] << " ";
+      }
+      std::cout << std::endl;
+    }*/
+
+    return 0;
 }

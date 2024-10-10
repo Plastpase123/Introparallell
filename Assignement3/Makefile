@@ -16,6 +16,9 @@ GoL: Game_Of_Life.c
 GoL_gif: Game_Of_Life.c
 	gcc Game_Of_Life.c -DOUTPUT -fopenmp -o Game_Of_Life
 
+matrix: matrix_mult.cpp
+	g++ -std=c++11 -fopenmp -Wall matrix_mult.cpp -o matrix_mult
+
 clean_o:
 	rm *.o
 
