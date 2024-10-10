@@ -68,10 +68,10 @@ std::vector<std::vector<int>> fill_in_matrix(int dim, std::vector<std::vector<in
             matrix[i][j] = std::rand() % 10; // Random integers between 0 and 99
         }
     }
-    return c;
+    return matrix;
 }
 
-std::vector<std::vector<int>> zero_matrix(int dim, std::vector<std::vector<int>> &c)
+void zero_matrix(int dim, std::vector<std::vector<int>> &c)
 {
     for (int i = 0; i < dim; ++i)
     {
@@ -80,12 +80,11 @@ std::vector<std::vector<int>> zero_matrix(int dim, std::vector<std::vector<int>>
             c[i][j] = 0;
         }
     }
-    return c;
 }
 
 void usage(char *program)
 {
-    std::cout << "Usage: " << program << " dim threads" << std::endl;
+    std::cout << "Usage: " << program << " dim " << std::endl;
     exit(1);
 }
 
@@ -98,41 +97,43 @@ int main(int argc, char *argv[])
     }
 
     int dim = std::atoi(argv[1]);
-    // int nthrds = std::atoi(argv[2]);
 
     std::vector<std::vector<int>> a(dim, std::vector<int>(dim));
     std::vector<std::vector<int>> b(dim, std::vector<int>(dim));
-    std::vector<std::vector<int>> c = zero_matrix(dim);
+    std::vector<std::vector<int>> c(dim, std::vector<int>(dim));
 
     a = fill_in_matrix(dim, a);
     b = fill_in_matrix(dim, b);
 
-    list<int> threads = {1, 2, 4, 8, 16, 32};
+    std::vector<int> threads = {1, 2, 4, 8, 16, 32};
+    
+    double start_time;
+    double stop_time;
 
-    for (int i = 0; i < threads.size(); i++)
+    for (int i = 0; i < int(threads.size()); i++)
     {
         omp_set_num_threads(threads[i]);
 
-        c = zero_matrix(dim);
+        zero_matrix(dim, c);
 
-        double start_time = omp_get_wtime();
+        start_time = omp_get_wtime();
         c = multiply_1_collapse(dim, a, b, c);
-        double stop_time = omp_get_wtime();
+        stop_time = omp_get_wtime();
 
         std::cout << "Time taken for 1 collapse: " << stop_time - start_time << ", with dim: " << dim << " and " << threads[i] << " threads" << std::endl;
 
-        c = zero_matrix(dim);
+        zero_matrix(dim, c);
 
-        double start_time = omp_get_wtime();
+        start_time = omp_get_wtime();
         c = multiply_2_collapse(dim, a, b, c);
-        double stop_time = omp_get_wtime();
+        stop_time = omp_get_wtime();
         std::cout << "Time taken for 2 collapse: " << stop_time - start_time << ", with dim: " << dim << " and " << threads[i] << " threads" << std::endl;
 
-        c = zero_matrix(dim);
+        zero_matrix(dim, c);
 
-        double start_time = omp_get_wtime();
+        start_time = omp_get_wtime();
         c = multiply_3_collapse(dim, a, b, c);
-        double stop_time = omp_get_wtime();
+        stop_time = omp_get_wtime();
         std::cout << "Time taken for 3 collapse: " << stop_time - start_time << ", with dim: " << dim << " and " << threads[i] << " threads" << std::endl;
     }
 
