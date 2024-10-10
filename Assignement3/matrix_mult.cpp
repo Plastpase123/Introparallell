@@ -32,19 +32,18 @@ int main(int argc, char *argv[])
         {
             a[i][j] = std::rand() % 10; // Random integers between 0 and 99
             b[i][j] = std::rand() % 10;
+            c[i][j] = 0;
         }
     }
 
     auto start_time = std::chrono::system_clock::now();
 
     /* static scheduling of matrix multiplication loops */
-#pragma omp parallel default(private) shared(a, b, c, dim) num_threads(nthrds)
-#pragma omp for schedule(static)
+#pragma omp for collapse(1)
     for (int i = 0; i < dim; i++)
     {
         for (int j = 0; j < dim; j++)
         {
-            c[i][j] = 0;
             for (int k = 0; k < dim; k++)
             {
                 c[i][j] += a[i][k] * b[k][j];
