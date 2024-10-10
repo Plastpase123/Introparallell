@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
   // Fill the matrix with random integers
   for (int i = 0; i < dim; ++i) {
     for (int j = 0; j < dim; ++j) {
-      a[i][j] = std::rand() % 10;  // Random integers between 0 and 99
+      a[i][j] = std::rand() % 10;  // Random integers between 0 and 9
       b[i][j] = std::rand() % 10;
     }
   }
