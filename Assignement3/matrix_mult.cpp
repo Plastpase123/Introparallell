@@ -8,7 +8,7 @@
 std::vector<std::vector<int>> multiply_1_collapse(int dim, std::vector<std::vector<int>> &a, std::vector<std::vector<int>> &b, std::vector<std::vector<int>> &c)
 {
 
-#pragma omp parallel default(private) shared(a, b, c, dim) \ num_threads(4)
+#pragma omp parallel default(none) shared(a, b, c, dim)
 #pragma omp for collapse(1) schedule(static)
     for (int i = 0; i < dim; i++)
     {
@@ -25,7 +25,7 @@ std::vector<std::vector<int>> multiply_1_collapse(int dim, std::vector<std::vect
 
 std::vector<std::vector<int>> multiply_2_collapse(int dim, std::vector<std::vector<int>> &a, std::vector<std::vector<int>> &b, std::vector<std::vector<int>> &c)
 {
-#pragma omp parallel default(private) shared(a, b, c, dim) \ num_threads(4)
+#pragma omp parallel default(none) shared(a, b, c, dim)
 #pragma omp for collapse(2) schedule(static)
     for (int i = 0; i < dim; i++)
     {
@@ -42,7 +42,7 @@ std::vector<std::vector<int>> multiply_2_collapse(int dim, std::vector<std::vect
 
 std::vector<std::vector<int>> multiply_3_collapse(int dim, std::vector<std::vector<int>> &a, std::vector<std::vector<int>> &b, std::vector<std::vector<int>> &c)
 {
-#pragma omp parallel default(private) shared(a, b, c, dim) \ num_threads(4)
+#pragma omp parallel default(none) shared(a, b, c, dim)
 #pragma omp for collapse(3) schedule(static)
     for (int i = 0; i < dim; i++)
     {
@@ -67,7 +67,8 @@ std::vector<std::vector<int>> zero_matrix(int dim)
             c[i][j] = 0;
         }
     }
-
+    return c;
+}
     void usage(char *program)
     {
         std::cout << "Usage: " << program << " dim threads" << std::endl;
@@ -81,6 +82,8 @@ std::vector<std::vector<int>> zero_matrix(int dim)
         {
             usage(argv[0]);
         }
+	
+	omp_set_num_threads(8);
 
         int dim = std::atoi(argv[1]);
         // int nthrds = std::atoi(argv[2]);
@@ -100,11 +103,19 @@ std::vector<std::vector<int>> zero_matrix(int dim)
             }
         }
 
-        start_time = omp_get_wtime();
-        c = multiply_1_collapse(dim, a, b, c);
-        stop_time = omp_get_wtime();
+        double start_time = omp_get_wtime();
+        c = multiply_3_collapse(dim, a, b, c);
+        double stop_time = omp_get_wtime();
         std::cout << "Time taken for 1 collapse: " << stop_time - start_time << std::endl;
+	
 
+	omp_set_num_threads(32);
+	c = zero_matrix(dim);
+	start_time = omp_get_wtime();
+	c = multiply_3_collapse(dim, a, b, c);
+	stop_time = omp_get_wtime();
+	std::cout << "Time taken for 3 collapse: " << stop_time - start_time << std::endl;
+    
         // Output the matrix
         /*
         std::cout << "The " << dim << "x" << dim << " matrix is: \n";
@@ -117,4 +128,4 @@ std::vector<std::vector<int>> zero_matrix(int dim)
 
         return 0;
     }
-}
+
