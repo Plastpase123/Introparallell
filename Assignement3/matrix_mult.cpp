@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     auto start_time = std::chrono::system_clock::now();
 
     /* static scheduling of matrix multiplication loops */
-#pragma omp for collapse(1)
+#pragma omp parallel for collapse(3) num_threads(nthrds)
     for (int i = 0; i < dim; i++)
     {
         for (int j = 0; j < dim; j++)
