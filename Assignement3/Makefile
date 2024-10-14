@@ -19,6 +19,10 @@ GoL_gif: Game_Of_Life.c
 matrix: matrix_mult.cpp
 	g++ -std=c++11 -fopenmp -Wall matrix_mult.cpp -o matrix_mult
 
+gauss: Gauss.cpp
+	g++ -std=c++11 -fopenmp -Wall Gauss.cpp -o Gauss
+
+
 clean_o:
 	rm *.o
 
