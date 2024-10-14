@@ -13,16 +13,16 @@ void usage(char *program)
 
 void col_oriented(int n, std::vector<int> &x, std::vector<int> &b, std::vector<std::vector<int>> &A)
 {
-#pragma omp for num_threads(4)
+  #pragma omp parallel for
   for (int row = 0; row < n; row++)
   {
     x[row] = b[row];
   }
 
+  #pragma omp parallel for collapse(2)
   for (int col = n - 1; col >= 0; col--)
   {
     x[col] /= A[col][col];
-#pragma omp for num_threads(4)
     for (int row = 0; row < col; row++)
     {
       x[row] -= A[row][col] * x[col];
@@ -38,11 +38,13 @@ void row_oriented(int n, std::vector<int> &x, std::vector<int> &b, std::vector<s
   for (int row = n - 1; row >= 0; row--)
   {
     x[row] = b[row];
+    int sum = 0;
+    #pragma omp parallel for reduction(+:sum)
     for (int col = row + 1; col < n; col++)
     {
-      x[row] -= A[row][col] * x[col];
+      sum += A[row][col] * x[col];
     }
-    x[row] /= A[row][row];
+    x[row] = (b[row] - sum) / A[row][row];
   }
 
   return;
@@ -92,19 +94,19 @@ int main(int argc, char *argv[])
   {
     for (int j = 0; j < dim; ++j)
     {
-      std::cout << A[i][j];
+      //std::cout << A[i][j];
     }
-    std::cout << "\n";
+    //std::cout << "\n";
   }
 
   double start_time, stop_time;
   start_time = omp_get_wtime();
-  row_oriented(dim, x, b, A);
+  col_oriented(dim, x, b, A);
   stop_time = omp_get_wtime();
 
   for (int i = 0; i < dim; i++)
   {
-    std::cout << b[i];
+    //std::cout << b[i];
   }
   std::cout << "\n";
 
