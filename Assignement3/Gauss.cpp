@@ -19,7 +19,7 @@ void col_oriented(int n, std::vector<int> &x, std::vector<int> &b, std::vector<s
     x[row] = b[row];
   }
 
-  #pragma omp parallel for collapse(2)
+  #pragma omp parallel for
   for (int col = n - 1; col >= 0; col--)
   {
     x[col] /= A[col][col];
