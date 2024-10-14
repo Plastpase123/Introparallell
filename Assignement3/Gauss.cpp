@@ -49,13 +49,14 @@ void row_oriented(int n, std::vector<int> &x, std::vector<int> &b, std::vector<s
 
 std::vector<std::vector<int>> create_matrix(int dim)
 {
+  srand(time(0));
 
   std::vector<std::vector<int>> matrix(dim, std::vector<int>(dim));
   for (int i = 0; i < dim; ++i)
   {
     for (int j = 0; j < dim; ++j)
     {
-      matrix[i][j] = rand() % 10;
+      matrix[i][j] = rand() % 9 + 1;
     }
   }
 
